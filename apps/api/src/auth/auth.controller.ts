@@ -20,7 +20,7 @@ import { Public } from './decorators/public.decorator';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles/roles.guard';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { LoginDto } from './auth.dto';
+import { LoginDto } from './dto/auth.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -43,8 +43,6 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   // ..
   login(@Request() req) {
-    console.log({ roleCheck: req.user });
-
     return this.authService.login(req.user.id, req.user.name, req.user.role);
   }
 

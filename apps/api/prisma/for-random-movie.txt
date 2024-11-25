@@ -1,0 +1,191 @@
+// Create certifications
+const certifications = [
+  // ... your existing certifications ...
+] as const;
+
+await Promise.all(
+  certifications.map(async (cert) => {
+    await prisma.certification.upsert({
+      where: {
+        type_country: {
+          type: cert.type,
+          country: cert.country,
+        },
+      },
+      update: {},
+      create: {
+        type: cert.type,
+        country: cert.country,
+      },
+    });
+  }),
+);
+console.log('Created certifications');
+
+// Create sample movies with relationships
+const movieTemplates = [
+  {
+    primaryTitle: 'The Dark Knight',
+    originalTitle: 'The Dark Knight',
+    titleType: TitleType.MOVIE,
+    slug: 'the-dark-knight-2008',
+    releaseDate: new Date('2008-07-18'),
+    plot: 'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.',
+    runtime: 152,
+    isReleased: true,
+    originalLanguage: 'en',
+    budget: 185000000,
+    revenue: 1004558444,
+    imdbRating: 9.0,
+    genres: ['Action', 'Crime', 'Drama'],
+    productionCompanies: ['Warner Bros.'],
+    certifications: [{ type: CertificationType.PG13, country: 'USA' }],
+  },
+  // ... keep your other existing sample movies ...
+] as const;
+
+// Create 10 additional random movies
+const randomMovieTitles = [
+  'The Last Frontier',
+  'Midnight Echo',
+  'Electric Dreams',
+  'The Silent Wave',
+  "Tomorrow's Promise",
+  'Beyond the Stars',
+  'The Hidden Truth',
+  'Eternal Winter',
+  'City of Shadows',
+  'The Lost Kingdom',
+  'Dancing in Time',
+  'Quantum Effect',
+  'Echoes of Yesterday',
+  'The Final Secret',
+  'Digital Horizons',
+];
+
+const plotTemplates = [
+  'A journey of discovery leads to unexpected revelations...',
+  'In a world where nothing is as it seems...',
+  'Against all odds, a group of unlikely heroes...',
+  'When the past catches up with the present...',
+  'A mysterious event changes everything...',
+];
+
+// Generate random movies
+const generateRandomMovies = (count: number) => {
+  return Array.from({ length: count }, () => ({
+    primaryTitle: getRandomItems(randomMovieTitles, 1)[0],
+    originalTitle: getRandomItems(randomMovieTitles, 1)[0],
+    titleType: Math.random() > 0.7 ? TitleType.TV_SERIES : TitleType.MOVIE,
+    slug:
+      getRandomItems(randomMovieTitles, 1)[0]
+        .toLowerCase()
+        .replace(/\s+/g, '-') +
+      '-' +
+      randomInt(1990, 2024),
+    releaseDate: new Date(
+      randomInt(1990, 2024),
+      randomInt(0, 11),
+      randomInt(1, 28),
+    ),
+    plot: getRandomItems(plotTemplates, 1)[0],
+    runtime: randomInt(90, 180),
+    isReleased: Math.random() > 0.1,
+    originalLanguage: getRandomItems(
+      ['en', 'es', 'fr', 'de', 'ja', 'ko'],
+      1,
+    )[0],
+    budget: randomInt(1000000, 200000000),
+    revenue: randomInt(0, 1000000000),
+    imdbRating: randomInt(60, 90) / 10,
+    genres: getRandomItems(genres, randomInt(2, 4)),
+    productionCompanies: getRandomItems(
+      companies.map((c) => c.name),
+      randomInt(1, 2),
+    ),
+    certifications: [
+      {
+        type: getRandomItems(
+          [
+            CertificationType.PG,
+            CertificationType.PG13,
+            CertificationType.R,
+            CertificationType.TV14,
+          ],
+          1,
+        )[0],
+        country: 'USA',
+      },
+    ],
+  }));
+};
+
+// Combine template movies with random movies
+const allMovies = [...movieTemplates, ...generateRandomMovies(10)];
+
+for (const movie of allMovies) {
+  const genres = await Promise.all(
+    movie.genres.map((name) =>
+      prisma.genre.findUnique({
+        where: { name },
+        select: { id: true },
+      }),
+    ),
+  );
+
+  const companies = await Promise.all(
+    movie.productionCompanies.map((name) =>
+      prisma.productionCompany.findUnique({
+        where: { name },
+        select: { id: true },
+      }),
+    ),
+  );
+
+  const certifications = await Promise.all(
+    movie.certifications.map((cert) =>
+      prisma.certification.findFirst({
+        where: {
+          type: cert.type,
+          country: cert.country,
+        },
+        select: { id: true },
+      }),
+    ),
+  );
+
+  await prisma.title.upsert({
+    where: { slug: movie.slug },
+    update: {},
+    create: {
+      primaryTitle: movie.primaryTitle,
+      originalTitle: movie.originalTitle,
+      titleType: movie.titleType,
+      slug: movie.slug,
+      releaseDate: movie.releaseDate,
+      plot: movie.plot,
+      runtime: movie.runtime,
+      isReleased: movie.isReleased,
+      originalLanguage: movie.originalLanguage,
+      budget: movie.budget,
+      revenue: movie.revenue,
+      imdbRating: movie.imdbRating,
+      genres: {
+        connect: genres
+          .filter((g): g is { id: string } => g !== null)
+          .map((g) => ({ id: g.id })),
+      },
+      production: {
+        connect: companies
+          .filter((c): c is { id: string } => c !== null)
+          .map((c) => ({ id: c.id })),
+      },
+      certification: {
+        connect: certifications
+          .filter((c): c is { id: string } => c !== null)
+          .map((c) => ({ id: c.id })),
+      },
+    },
+  });
+}
+console.log('Created sample movies and random movies');

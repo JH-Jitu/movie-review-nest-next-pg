@@ -1,0 +1,387 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum TitleType {
+  MOVIE
+  TV_SERIES
+  TV_EPISODE
+  VIDEO_GAME
+  SHORT_FILM
+  DOCUMENTARY
+  TV_MOVIE
+  TV_SPECIAL
+  TV_MINI_SERIES
+  VIDEO
+}
+
+enum CertificationType {
+  G
+  PG
+  PG13
+  R
+  NC17
+  TV14
+  TVMA
+}
+
+enum WatchStatus {
+  WANT_TO_WATCH
+  WATCHING
+  WATCHED
+  STOPPED_WATCHING
+}
+
+// User and Authentication
+model User {
+  id                 Int      @id @default(autoincrement())
+  email              String   @unique
+  name               String
+  password           String
+  hashedRefreshToken String?
+  role               Role     @default(USER)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // User Profile
+  avatar   String?
+  bio      String? @db.Text
+  location String?
+  website  String?
+
+  // Social
+  followers User[] @relation("UserFollows")
+  following User[] @relation("UserFollows")
+
+  // User Activities
+  reviews      Review[]
+  ratings      Rating[]
+  lists        List[]
+  watchlist    Watchlist[]
+  comments     Comment[]
+  watchHistory WatchHistory[]
+
+  @@index([email], map: "user_email_idx")
+}
+
+// Core Title (Movie/Show) Model
+model Title {
+  id            String    @id @default(uuid())
+  titleType     TitleType
+  primaryTitle  String
+  originalTitle String?
+  slug          String    @unique
+
+  // Release Info
+  releaseDate DateTime?
+  endDate     DateTime? // For TV series
+  isReleased  Boolean   @default(false)
+  inTheaters  Boolean   @default(false)
+
+  // Content Details
+  plot      String  @db.Text
+  storyline String? @db.Text
+  tagline   String?
+  runtime   Int? // in minutes
+
+  // Media
+  posterUrl   String?
+  backdropUrl String?
+  trailerUrl  String?
+
+  // Ratings and Metrics
+  imdbRating     Float?
+  numVotes       Int    @default(0)
+  popularity     Float  @default(0)
+  popularityRank Int?
+
+  // Technical Details
+  budget           Float?
+  revenue          Float?
+  originalLanguage String
+  spokenLanguages  Language[]
+  filmingLocations Location[]
+  soundMix         SoundMix[]
+  color            Boolean    @default(true)
+  aspectRatio      String?
+
+  // Classifications
+  certification Certification[]
+  genres        Genre[]
+  keywords      Keyword[]
+
+  // Relationships
+  cast           CastMember[]
+  crew           CrewMember[]
+  production     ProductionCompany[]
+  awards         Award[]
+  reviews        Review[]
+  ratings        Rating[]
+  lists          ListItem[]
+  episodes       Episode[]           @relation("SeriesEpisodes")
+  parentSeries   Title?              @relation("SeriesHierarchy", fields: [parentSeriesId], references: [id])
+  childEpisodes  Title[]             @relation("SeriesHierarchy")
+  parentSeriesId String?
+  similarTo      Title[]             @relation("SimilarTitles")
+  similarFrom    Title[]             @relation("SimilarTitles")
+  watchlist      Watchlist[]
+  watchHistory   WatchHistory[]
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([primaryTitle], map: "title_primary_title_idx")
+  @@index([releaseDate], map: "title_release_date_idx")
+  @@index([imdbRating], map: "title_imdb_rating_idx")
+  @@index([popularityRank], map: "title_popularity_rank_idx")
+}
+
+// Episode specific information
+model Episode {
+  id            String    @id @default(uuid())
+  series        Title     @relation("SeriesEpisodes", fields: [seriesId], references: [id])
+  seriesId      String
+  seasonNumber  Int
+  episodeNumber Int
+  airDate       DateTime?
+  plot          String?   @db.Text
+
+  @@unique([seriesId, seasonNumber, episodeNumber])
+  @@index([seriesId], map: "episode_series_id_idx")
+}
+
+// Cast and Crew
+model Person {
+  id         String    @id @default(uuid())
+  name       String
+  slug       String    @unique
+  birthDate  DateTime?
+  deathDate  DateTime?
+  birthPlace String?
+  biography  String?   @db.Text
+  photoUrl   String?
+  height     Float? // in cm
+
+  // Relationships
+  castRoles CastMember[]
+  crewRoles CrewMember[]
+  awards    Award[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name], map: "person_name_idx")
+}
+
+model CastMember {
+  id        String @id @default(uuid())
+  title     Title  @relation(fields: [titleId], references: [id])
+  titleId   String
+  person    Person @relation(fields: [personId], references: [id])
+  personId  String
+  character String
+  order     Int
+
+  @@index([titleId], map: "cast_member_title_id_idx")
+  @@index([personId], map: "cast_member_person_id_idx")
+}
+
+model CrewMember {
+  id         String @id @default(uuid())
+  title      Title  @relation(fields: [titleId], references: [id])
+  titleId    String
+  person     Person @relation(fields: [personId], references: [id])
+  personId   String
+  role       String // director, writer, etc.
+  department String
+
+  @@index([titleId], map: "crew_member_title_id_idx")
+  @@index([personId], map: "crew_member_person_id_idx")
+}
+
+// Classifications and Categories
+model Genre {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  titles Title[]
+}
+
+model Keyword {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  titles Title[]
+}
+
+model Language {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  code   String  @unique
+  titles Title[]
+}
+
+model Location {
+  id      String  @id @default(uuid())
+  name    String
+  country String
+  titles  Title[]
+
+  @@unique([name, country])
+}
+
+model SoundMix {
+  id     String  @id @default(uuid())
+  name   String  @unique // Dolby Digital, DTS, etc.
+  titles Title[]
+}
+
+model Certification {
+  id      String            @id @default(uuid())
+  type    CertificationType
+  country String
+  titles  Title[]
+
+  @@unique([type, country])
+}
+
+// Companies and Organizations
+model ProductionCompany {
+  id      String  @id @default(uuid())
+  name    String  @unique
+  country String?
+  titles  Title[]
+}
+
+// Awards and Recognition
+model Award {
+  id           String  @id @default(uuid())
+  name         String // Oscar, Golden Globe, etc.
+  category     String // Best Picture, Best Actor, etc.
+  year         Int
+  isNomination Boolean @default(false)
+  isWinner     Boolean @default(false)
+
+  title    Title?  @relation(fields: [titleId], references: [id])
+  titleId  String?
+  person   Person? @relation(fields: [personId], references: [id])
+  personId String?
+
+  @@index([titleId], map: "award_title_id_idx")
+  @@index([personId], map: "award_person_id_idx")
+}
+
+// User Generated Content
+model Review {
+  id           String  @id @default(uuid())
+  title        Title   @relation(fields: [titleId], references: [id])
+  titleId      String
+  user         User    @relation(fields: [userId], references: [id])
+  userId       Int
+  content      String  @db.Text
+  rating       Int?    @db.SmallInt
+  helpfulVotes Int     @default(0)
+  spoilers     Boolean @default(false)
+
+  comments  Comment[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([titleId], map: "review_title_id_idx")
+  @@index([userId], map: "review_user_id_idx")
+}
+
+model Rating {
+  id        String   @id @default(uuid())
+  title     Title    @relation(fields: [titleId], references: [id])
+  titleId   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  value     Float // 1-10 rating
+  createdAt DateTime @default(now())
+
+  @@unique([titleId, userId])
+  @@index([titleId], map: "rating_title_id_idx")
+  @@index([userId], map: "rating_user_id_idx")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  review    Review   @relation(fields: [reviewId], references: [id])
+  reviewId  String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reviewId], map: "comment_review_id_idx")
+  @@index([userId], map: "comment_user_id_idx")
+}
+
+// User Lists and Collections
+model List {
+  id          String     @id @default(uuid())
+  name        String
+  description String?    @db.Text
+  isPublic    Boolean    @default(true)
+  user        User       @relation(fields: [userId], references: [id])
+  userId      Int
+  items       ListItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId], map: "list_user_id_idx")
+}
+
+model ListItem {
+  id      String  @id @default(uuid())
+  list    List    @relation(fields: [listId], references: [id])
+  listId  String
+  title   Title   @relation(fields: [titleId], references: [id])
+  titleId String
+  notes   String? @db.Text
+  order   Int
+
+  @@index([listId], map: "list_item_list_id_idx")
+  @@index([titleId], map: "list_item_title_id_idx")
+}
+
+model Watchlist {
+  id      String      @id @default(uuid())
+  user    User        @relation(fields: [userId], references: [id])
+  userId  Int
+  title   Title       @relation(fields: [titleId], references: [id])
+  titleId String
+  status  WatchStatus @default(WANT_TO_WATCH)
+  addedAt DateTime    @default(now())
+
+  @@unique([userId, titleId])
+  @@index([userId], map: "watchlist_user_id_idx")
+  @@index([titleId], map: "watchlist_title_id_idx")
+}
+
+model WatchHistory {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  title     Title    @relation(fields: [titleId], references: [id])
+  titleId   String
+  watchedAt DateTime @default(now())
+  progress  Int? // For resuming where left off (in seconds)
+
+  @@index([userId], map: "watch_history_user_id_idx")
+  @@index([titleId], map: "watch_history_title_id_idx")
+}

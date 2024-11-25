@@ -26,6 +26,8 @@ import { LoginDto } from './auth.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Public()
   @Post('signup')
   registerUser(@Body() createUserDto: CreateUserDto) {
     return this.authService.registerUser(createUserDto);
@@ -41,6 +43,8 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   // ..
   login(@Request() req) {
+    console.log({ roleCheck: req.user });
+
     return this.authService.login(req.user.id, req.user.name, req.user.role);
   }
 
@@ -52,7 +56,6 @@ export class AuthController {
     };
   }
 
-  @Public()
   @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   refreshToken(@Request() req) {

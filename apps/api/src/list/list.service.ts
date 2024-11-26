@@ -6,9 +6,13 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateListDto, UpdateListDto } from './dto/list.dto';
-import { CreateListItemDto, UpdateListItemDto } from './dto/list-item.dto';
 import { PaginationQueryDto, SortOrder } from '../common/dto/pagination.dto';
+import {
+  CreateListDto,
+  CreateListItemDto,
+  UpdateListDto,
+  UpdateListItemDto,
+} from './list.dto';
 
 @Injectable()
 export class ListService {

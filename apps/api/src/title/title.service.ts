@@ -14,6 +14,7 @@ import {
   UpdateEpisodeDto,
   UpdateTitleDto,
 } from './title.dto';
+import slugify from 'slugify';
 
 @Injectable()
 export class TitleService {
@@ -102,9 +103,31 @@ export class TitleService {
   async create(createTitleDto: CreateTitleDto) {
     const { genreIds, certificationIds, ...titleData } = createTitleDto;
 
+    // Generate slug from primaryTitle and add year if releaseDate exists
+    let slug = slugify(titleData.primaryTitle, {
+      lower: true,
+      strict: true,
+      remove: /[*+~.()'"!:@]/g,
+    });
+
+    if (titleData.releaseDate) {
+      const year = new Date(titleData.releaseDate).getFullYear();
+      slug = `${slug}-${year}`;
+    }
+
+    // Check if slug exists and make it unique if needed
+    const existingTitle = await this.prisma.title.findUnique({
+      where: { slug },
+    });
+
+    if (existingTitle) {
+      slug = `${slug}-${Date.now()}`;
+    }
+
     return this.prisma.title.create({
       data: {
         ...titleData,
+        slug,
         genres: {
           connect: genreIds.map((id) => ({ id })),
         },
@@ -313,5 +336,102 @@ export class TitleService {
         certification: true,
       },
     });
+  }
+
+  // Review & Ratings
+  async getReviews(id: string, query: PaginationQueryDto) {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = SortOrder.DESC,
+    } = query;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: { titleId: id },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder.toLowerCase() },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          _count: {
+            select: {
+              comments: true,
+            },
+          },
+        },
+      }),
+      this.prisma.review.count({ where: { titleId: id } }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getRatings(id: string, query: PaginationQueryDto) {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = SortOrder.DESC,
+    } = query;
+    const skip = (page - 1) * limit;
+
+    const [data, total, stats] = await Promise.all([
+      this.prisma.rating.findMany({
+        where: { titleId: id },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder.toLowerCase() },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+      }),
+      this.prisma.rating.count({ where: { titleId: id } }),
+      this.prisma.rating.aggregate({
+        where: { titleId: id },
+        _avg: { value: true },
+        _count: true,
+        _min: { value: true },
+        _max: { value: true },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        statistics: {
+          averageRating: stats._avg.value || 0,
+          totalRatings: stats._count,
+          lowestRating: stats._min.value || 0,
+          highestRating: stats._max.value || 0,
+        },
+      },
+    };
   }
 }

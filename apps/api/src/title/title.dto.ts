@@ -31,54 +31,23 @@ export class CreateTitleDto {
   @IsOptional()
   releaseDate?: Date;
 
-  @ApiProperty({ required: false })
-  @IsDate()
-  @IsOptional()
-  endDate?: Date;
-
-  @ApiProperty({ default: false })
-  @IsBoolean()
-  @IsOptional()
-  isReleased?: boolean;
-
-  @ApiProperty({ default: false })
-  @IsBoolean()
-  @IsOptional()
-  inTheaters?: boolean;
-
   @ApiProperty()
   @IsString()
   plot: string;
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  storyline?: string;
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  tagline?: string;
 
   @ApiProperty({ required: false })
   @IsNumber()
   @IsOptional()
   runtime?: number;
 
-  @ApiProperty({ required: false })
-  @IsString()
+  @ApiProperty({ default: false })
+  @IsBoolean()
   @IsOptional()
-  posterUrl?: string;
+  isReleased?: boolean;
 
-  @ApiProperty({ required: false })
+  @ApiProperty()
   @IsString()
-  @IsOptional()
-  backdropUrl?: string;
-
-  @ApiProperty({ required: false })
-  @IsString()
-  @IsOptional()
-  trailerUrl?: string;
+  originalLanguage: string;
 
   @ApiProperty({ required: false })
   @IsNumber()
@@ -90,19 +59,20 @@ export class CreateTitleDto {
   @IsOptional()
   revenue?: number;
 
-  @ApiProperty()
-  @IsString()
-  originalLanguage: string;
-
   @ApiProperty({ required: false })
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  aspectRatio?: string;
+  imdbRating?: number;
 
   @ApiProperty({ type: [String] })
   @IsArray()
   @IsUUID(undefined, { each: true })
   genreIds: string[];
+
+  @ApiProperty({ type: [String] })
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  productionCompanyIds: string[];
 
   @ApiProperty({ type: [String] })
   @IsArray()

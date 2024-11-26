@@ -12,7 +12,7 @@ async function bootstrap() {
     .setTitle('Movies API')
     .setDescription('The Movies API documentation')
     .setVersion('1.0')
-    .addBasicAuth() // For username/password auth
+    .addBearerAuth() // For username/password auth
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

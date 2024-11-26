@@ -101,7 +101,8 @@ export class TitleService {
   }
 
   async create(createTitleDto: CreateTitleDto) {
-    const { genreIds, certificationIds, ...titleData } = createTitleDto;
+    const { genreIds, productionCompanyIds, certificationIds, ...titleData } =
+      createTitleDto;
 
     // Generate slug from primaryTitle and add year if releaseDate exists
     let slug = slugify(titleData.primaryTitle, {
@@ -131,12 +132,16 @@ export class TitleService {
         genres: {
           connect: genreIds.map((id) => ({ id })),
         },
+        production: {
+          connect: productionCompanyIds.map((id) => ({ id })),
+        },
         certification: {
           connect: certificationIds.map((id) => ({ id })),
         },
       },
       include: {
         genres: true,
+        production: true,
         certification: true,
       },
     });

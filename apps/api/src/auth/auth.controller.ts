@@ -22,7 +22,7 @@ import { RolesGuard } from './guards/roles/roles.guard';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/auth.dto';
 
-@ApiTags('auth')
+// @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -46,7 +46,7 @@ export class AuthController {
     return this.authService.login(req.user.id, req.user.name, req.user.role);
   }
 
-  @Roles('ADMIN', 'MODERATOR')
+  // @Roles('ADMIN', 'MODERATOR')
   @Get('protected')
   getAll(@Request() req) {
     return {
@@ -54,6 +54,7 @@ export class AuthController {
     };
   }
 
+  @Public()
   @UseGuards(RefreshAuthGuard)
   @Post('refresh')
   refreshToken(@Request() req) {

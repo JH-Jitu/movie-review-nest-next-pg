@@ -13,6 +13,7 @@ import {
   UpdateListDto,
   UpdateListItemDto,
 } from './list.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ListService {
@@ -28,7 +29,8 @@ export class ListService {
     } = query;
     const skip = (page - 1) * limit;
 
-    const where = {
+    // Define where clause with proper Prisma types
+    const where: Prisma.ListWhereInput = {
       isPublic: true,
       ...(search && {
         OR: [
@@ -44,7 +46,9 @@ export class ListService {
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy]: sortOrder.toLowerCase() },
+        orderBy: {
+          [sortBy]: sortOrder.toLowerCase() as Prisma.SortOrder,
+        },
         include: {
           user: {
             select: {

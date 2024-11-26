@@ -192,7 +192,9 @@ export class ReviewService {
         where: { reviewId },
         skip,
         take: limit,
-        orderBy: { createdAt: sortOrder.toLowerCase() },
+        orderBy: {
+          createdAt: sortOrder.toLowerCase() as Prisma.SortOrder,
+        },
         include: {
           user: {
             select: {

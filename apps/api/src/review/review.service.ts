@@ -13,6 +13,7 @@ import {
   UpdateCommentDto,
   UpdateReviewDto,
 } from './review.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReviewService {
@@ -28,7 +29,7 @@ export class ReviewService {
     } = query;
     const skip = (page - 1) * limit;
 
-    const where = search
+    const where: Prisma.ReviewWhereInput = search
       ? {
           OR: [
             { content: { contains: search, mode: 'insensitive' } },
@@ -47,7 +48,9 @@ export class ReviewService {
         where,
         skip,
         take: limit,
-        orderBy: { [sortBy]: sortOrder.toLowerCase() },
+        orderBy: {
+          [sortBy]: sortOrder.toLowerCase() as Prisma.SortOrder,
+        },
         include: {
           user: {
             select: {

@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { GenreService } from './genre.service';
+import { CreateGenreDto } from './genre.dto';
 
 @ApiTags('genres')
 @Controller('genres')
@@ -16,7 +17,7 @@ export class GenreController {
   @Post()
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Create genre' })
-  create(@Body() createGenreDto: { name: string }) {
+  create(@Body() createGenreDto: CreateGenreDto) {
     return this.genreService.create(createGenreDto);
   }
 

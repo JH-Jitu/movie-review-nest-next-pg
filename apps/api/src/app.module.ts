@@ -11,6 +11,9 @@ import { ReviewModule } from './review/review.module';
 import { RatingModule } from './rating/rating.module';
 import { ListModule } from './list/list.module';
 import { WatchlistModule } from './watchlist/watchlist.module';
+import { ProductionCompanyModule } from './production-company/production-company.module';
+import { CertificationModule } from './certification/certification.module';
+import { GenreModule } from './genre/genre.module';
 // import { GraphqlModule } from './graphql/graphql.module';
 
 @Module({
@@ -23,6 +26,9 @@ import { WatchlistModule } from './watchlist/watchlist.module';
     RatingModule,
     ListModule,
     WatchlistModule,
+    GenreModule,
+    CertificationModule,
+    ProductionCompanyModule,
     ConfigModule.forRoot({ isGlobal: true }),
     // GraphqlModule
   ],

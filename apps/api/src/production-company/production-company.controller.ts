@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { ProductionCompanyService } from './production-company.service';
+import { CreateProductionCompanyDto } from './production-company.dto';
 
 @ApiTags('production-companies')
 @Controller('production-companies')
@@ -18,9 +19,7 @@ export class ProductionCompanyController {
   @Post()
   @Roles('ADMIN')
   @ApiOperation({ summary: 'Create production company' })
-  create(
-    @Body() createProductionCompanyDto: { name: string; country?: string },
-  ) {
+  create(@Body() createProductionCompanyDto: CreateProductionCompanyDto) {
     return this.productionCompanyService.create(createProductionCompanyDto);
   }
 

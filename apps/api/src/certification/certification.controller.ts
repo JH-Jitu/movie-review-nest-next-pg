@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CertificationType } from '@prisma/client';
 import { CertificationService } from './certification.service';
+import { CreateCertificationDto } from './certification.dto';
 
 @ApiTags('certifications')
 @Controller('certifications')
@@ -19,10 +20,7 @@ export class CertificationController {
   @ApiOperation({ summary: 'Create certification' })
   create(
     @Body()
-    createCertificationDto: {
-      type: CertificationType;
-      country: string;
-    },
+    createCertificationDto: CreateCertificationDto,
   ) {
     return this.certificationService.create(createCertificationDto);
   }

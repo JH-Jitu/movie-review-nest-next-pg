@@ -23,7 +23,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
 
   //
-  app.enableShutdownHooks();
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -31,6 +30,7 @@ async function bootstrap() {
     }),
   );
 
+  app.enableShutdownHooks();
   await app.listen(8001);
 }
 bootstrap();

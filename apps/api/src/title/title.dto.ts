@@ -11,6 +11,7 @@ import {
   IsUUID,
 } from 'class-validator';
 import { TitleType } from '@prisma/client';
+import { Type } from 'class-transformer';
 
 export class CreateTitleDto {
   @ApiProperty({ enum: TitleType })
@@ -117,6 +118,7 @@ export class CreateEpisodeDto {
   episodeNumber: number;
 
   @ApiProperty({ required: false })
+  @Type(() => Date)
   @IsDate()
   @IsOptional()
   airDate?: Date;

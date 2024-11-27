@@ -32,6 +32,8 @@ export class TitleService {
 
     const filters = QueryFilters.createTitleFilters(query);
 
+    // const limitInt = parseInt(limit?.toString());
+
     const [data, total] = await Promise.all([
       this.prisma.title.findMany({
         where: filters,

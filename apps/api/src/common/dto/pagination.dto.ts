@@ -1,7 +1,7 @@
 // src/common/dto/pagination.dto.ts
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export enum SortOrder {
   ASC = 'asc',
@@ -17,6 +17,7 @@ export class PaginationQueryDto {
   page?: number = 1;
 
   @ApiPropertyOptional({ minimum: 1, maximum: 50, default: 10 })
+  @Transform(({ value }) => parseInt(value, 10))
   @Type(() => Number)
   @IsInt()
   @Min(1)

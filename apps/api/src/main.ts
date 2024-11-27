@@ -21,13 +21,16 @@ async function bootstrap() {
   // // ...
 
   app.useGlobalInterceptors(new TransformInterceptor());
-  await app.listen(8001);
 
+  //
+  app.enableShutdownHooks();
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
       whitelist: true,
     }),
   );
+
+  await app.listen(8001);
 }
 bootstrap();

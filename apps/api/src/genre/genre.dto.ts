@@ -4,7 +4,7 @@ import { IsString, IsNotEmpty } from 'class-validator';
 
 export class CreateGenreDto {
   @ApiProperty({
-    name: 'Bangla',
+    example: 'Bangla',
     description: 'Movie Genre',
   })
   @IsString()

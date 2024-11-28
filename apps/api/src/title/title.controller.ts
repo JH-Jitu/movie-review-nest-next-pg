@@ -31,6 +31,8 @@ import { FileUploadService } from '../common/utils/file-upload.util';
 import {
   CreateEpisodeDto,
   CreateTitleDto,
+  FullSearchDto,
+  QuickSearchDto,
   UpdateEpisodeDto,
   UpdateTitleDto,
 } from './title.dto';
@@ -200,5 +202,18 @@ export class TitleController {
     @Query() query: PaginationQueryDto,
   ) {
     return this.titleService.getRatings(id, query);
+  }
+
+  // Search Algos
+  @Get('search/quick')
+  @ApiOperation({ summary: 'Quick search for autocomplete' })
+  async quickSearch(@Query() query: QuickSearchDto) {
+    return this.titleService.quickSearch(query);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Full search with filters' })
+  async search(@Query() query: FullSearchDto) {
+    return this.titleService.searchTitles(query);
   }
 }

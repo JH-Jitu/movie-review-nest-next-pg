@@ -7,10 +7,12 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { PaginationQueryDto, SortOrder } from '../common/dto/pagination.dto';
 import { QueryFilters } from '../common/filters/query-filter';
-import { TitleType } from '@prisma/client';
+import { Prisma, TitleType } from '@prisma/client';
 import {
   CreateEpisodeDto,
   CreateTitleDto,
+  FullSearchDto,
+  QuickSearchDto,
   UpdateEpisodeDto,
   UpdateTitleDto,
 } from './title.dto';
@@ -20,6 +22,204 @@ import slugify from 'slugify';
 export class TitleService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async quickSearch(query: QuickSearchDto) {
+    const searchTerms = query.query?.trim().toLowerCase().split(/\s+/) || [];
+
+    if (!searchTerms.length) {
+      return [];
+    }
+
+    const where: Prisma.TitleWhereInput = {
+      AND: [
+        {
+          OR: [
+            {
+              primaryTitle: {
+                contains: searchTerms[0],
+                mode: 'insensitive', // Changed this
+              },
+            },
+            {
+              originalTitle: {
+                contains: searchTerms[0],
+                mode: 'insensitive', // Changed this
+              },
+            },
+          ],
+        },
+        ...searchTerms.slice(1).map((term) => ({
+          OR: [
+            {
+              primaryTitle: {
+                contains: term,
+                mode: 'insensitive', // Changed this
+              },
+            },
+            {
+              originalTitle: {
+                contains: term,
+                mode: 'insensitive', // Changed this
+              },
+            },
+          ] as Prisma.TitleWhereInput[],
+        })),
+      ],
+      ...(query.type && { titleType: query.type }),
+    };
+
+    return this.prisma.title.findMany({
+      where,
+      take: query.limit,
+      orderBy: [{ popularity: 'desc' }, { primaryTitle: 'asc' }],
+      select: {
+        id: true,
+        primaryTitle: true,
+        titleType: true,
+        releaseDate: true,
+        posterUrl: true,
+      },
+    });
+  }
+
+  // Full search with fixed types
+  async searchTitles(query: FullSearchDto) {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      sortBy = 'popularity',
+      sortOrder = SortOrder.DESC,
+      type,
+      genre,
+      year,
+    } = query;
+
+    const skip = (page - 1) * limit;
+    const searchTerms = search?.trim().toLowerCase().split(/\s+/) || [];
+
+    const whereConditions: Prisma.TitleWhereInput[] = [
+      // Search terms
+      ...searchTerms.map((term) => ({
+        OR: [
+          {
+            primaryTitle: {
+              contains: term,
+              mode: 'insensitive',
+            },
+          },
+          {
+            originalTitle: {
+              contains: term,
+              mode: 'insensitive',
+            },
+          },
+          {
+            plot: {
+              contains: term,
+              mode: 'insensitive',
+            },
+          },
+        ] as Prisma.TitleWhereInput[],
+      })),
+    ];
+
+    // Add type filter
+    if (type) {
+      whereConditions.push({ titleType: type });
+    }
+
+    // Add genre filter - fixed version
+    if (genre) {
+      whereConditions.push({
+        genres: {
+          some: {
+            name: {
+              equals: genre,
+              mode: 'insensitive', // Changed this
+            },
+          },
+        },
+      });
+    }
+
+    // Add year filter
+    if (year) {
+      whereConditions.push({
+        releaseDate: {
+          gte: new Date(`${year}-01-01`),
+          lt: new Date(`${parseInt(year) + 1}-01-01`),
+        },
+      });
+    }
+
+    const where: Prisma.TitleWhereInput = {
+      AND: whereConditions,
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.title.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: [
+          { [sortBy]: sortOrder.toLowerCase() },
+          { primaryTitle: 'asc' },
+        ],
+        include: {
+          genres: true,
+          certification: true,
+          _count: {
+            select: {
+              ratings: true,
+              reviews: true,
+            },
+          },
+        },
+      }),
+      this.prisma.title.count({ where }),
+    ]);
+
+    return {
+      data: data.map((title) => ({
+        ...title,
+        relevanceScore: this.calculateRelevanceScore(title, searchTerms),
+      })),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  // Helper function to calculate relevance score
+  private calculateRelevanceScore(title: any, searchTerms: string[]): number {
+    let score = 0;
+
+    searchTerms.forEach((term) => {
+      // Title match has highest weight
+      if (title.primaryTitle.toLowerCase().includes(term)) {
+        score += 10;
+      }
+      if (title.originalTitle?.toLowerCase().includes(term)) {
+        score += 8;
+      }
+      // Plot match has lower weight
+      if (title.plot?.toLowerCase().includes(term)) {
+        score += 3;
+      }
+    });
+
+    // Boost score based on popularity and ratings
+    score += (title.popularity || 0) / 100;
+    score += title.imdbRating || 0;
+
+    return score;
+  }
+
+  // Main Functions
+
   async findAll(query: PaginationQueryDto) {
     const {
       page = 1,
@@ -28,6 +228,11 @@ export class TitleService {
       sortBy = 'releaseDate',
       sortOrder = SortOrder.DESC,
     } = query;
+
+    if (search) {
+      return this.searchTitles(query as FullSearchDto);
+    }
+
     const skip = (page - 1) * limit;
 
     const filters = QueryFilters.createTitleFilters(query);

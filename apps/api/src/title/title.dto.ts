@@ -1,5 +1,5 @@
 // title.dto.ts
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsOptional,
@@ -12,6 +12,7 @@ import {
 } from 'class-validator';
 import { TitleType } from '@prisma/client';
 import { Type } from 'class-transformer';
+import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
 export class CreateTitleDto {
   @ApiProperty({ enum: TitleType })
@@ -209,3 +210,37 @@ export class CreateAwardDto {
 }
 
 export class UpdateAwardDto extends CreateAwardDto {}
+
+// src/title/dto/search.dto.ts
+export class QuickSearchDto {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  query?: string;
+
+  @ApiPropertyOptional({ enum: TitleType })
+  @IsEnum(TitleType)
+  @IsOptional()
+  type?: TitleType;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  limit: number = 5;
+}
+
+export class FullSearchDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ enum: TitleType })
+  @IsEnum(TitleType)
+  @IsOptional()
+  type?: TitleType;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  genre?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  year?: string;
+}

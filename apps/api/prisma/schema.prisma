@@ -147,6 +147,13 @@ model Title {
   @@index([releaseDate], map: "title_release_date_idx")
   @@index([imdbRating], map: "title_imdb_rating_idx")
   @@index([popularityRank], map: "title_popularity_rank_idx")
+  // For Query
+  @@index([primaryTitle])
+  @@index([originalTitle])
+  @@index([plot])
+  @@index([popularity])
+  @@index([releaseDate])
+  @@index([titleType])
 }
 
 // Episode specific information

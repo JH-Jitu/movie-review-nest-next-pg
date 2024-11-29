@@ -9,6 +9,9 @@ import {
   IsEnum,
   IsArray,
   IsUUID,
+  IsInt,
+  Min,
+  Max,
 } from 'class-validator';
 import { TitleType } from '@prisma/client';
 import { Type } from 'class-transformer';
@@ -228,19 +231,80 @@ export class QuickSearchDto {
   limit: number = 5;
 }
 
-export class FullSearchDto extends PaginationQueryDto {
-  @ApiPropertyOptional({ enum: TitleType })
-  @IsEnum(TitleType)
+// src/title/dto/search.dto.ts
+export class FullSearchDto {
+  @ApiPropertyOptional({
+    description: 'Search query',
+  })
   @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({
+    enum: TitleType,
+    enumName: 'TitleType',
+    description: 'Filter by title type',
+    example: TitleType.MOVIE,
+  })
+  @IsOptional()
+  @IsEnum(TitleType)
   type?: TitleType;
 
-  @ApiPropertyOptional()
-  @IsString()
+  @ApiPropertyOptional({
+    description: 'Filter by genre name',
+    example: 'Action',
+  })
   @IsOptional()
+  @IsString()
   genre?: string;
 
-  @ApiPropertyOptional()
-  @IsString()
+  @ApiPropertyOptional({
+    description: 'Filter by release year',
+    example: '2023',
+  })
   @IsOptional()
+  @IsString()
   year?: string;
+
+  @ApiPropertyOptional({
+    minimum: 1,
+    default: 1,
+    description: 'Page number',
+  })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  page?: number = 1;
+
+  @ApiPropertyOptional({
+    minimum: 1,
+    maximum: 50,
+    default: 10,
+    description: 'Number of items per page',
+  })
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(50)
+  @IsOptional()
+  limit?: number = 10;
+
+  @ApiPropertyOptional({
+    description: 'Sort field',
+    example: 'releaseDate',
+    default: 'releaseDate',
+  })
+  @IsOptional()
+  @IsString()
+  sortBy?: string = 'releaseDate';
+
+  @ApiPropertyOptional({
+    description: 'Sort order',
+    enum: ['asc', 'desc'],
+    default: 'desc',
+  })
+  @IsOptional()
+  @IsString()
+  sortOrder?: string = 'desc';
 }

@@ -13,6 +13,7 @@ import {
   UploadedFile,
   UploadedFiles,
   ParseUUIDPipe,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -213,7 +214,17 @@ export class TitleController {
 
   @Get('search')
   @ApiOperation({ summary: 'Full search with filters' })
-  async search(@Query() query: FullSearchDto) {
+  async search(
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        validateCustomDecorators: true,
+        forbidNonWhitelisted: true,
+        whitelist: true,
+      }),
+    )
+    query: FullSearchDto,
+  ) {
     return this.titleService.searchTitles(query);
   }
 }

@@ -97,63 +97,33 @@ export class TitleService {
     const skip = (page - 1) * limit;
     const searchTerms = search?.trim().toLowerCase().split(/\s+/) || [];
 
-    const whereConditions: Prisma.TitleWhereInput[] = [
-      // Search terms
-      ...searchTerms.map((term) => ({
-        OR: [
-          {
-            primaryTitle: {
-              contains: term,
-              mode: 'insensitive',
-            },
-          },
-          {
-            originalTitle: {
-              contains: term,
-              mode: 'insensitive',
-            },
-          },
-          {
-            plot: {
-              contains: term,
-              mode: 'insensitive',
-            },
-          },
-        ] as Prisma.TitleWhereInput[],
-      })),
-    ];
-
-    // Add type filter
-    if (type) {
-      whereConditions.push({ titleType: type });
-    }
-
-    // Add genre filter - fixed version
-    if (genre) {
-      whereConditions.push({
+    // Build the where condition differently
+    const where: Prisma.TitleWhereInput = {
+      // If there are search terms, add them
+      ...(searchTerms.length > 0 && {
+        OR: searchTerms.map((term) => ({
+          OR: [
+            { primaryTitle: { contains: term, mode: 'insensitive' } },
+            { originalTitle: { contains: term, mode: 'insensitive' } },
+            { plot: { contains: term, mode: 'insensitive' } },
+          ],
+        })),
+      }),
+      // Add other filters
+      ...(type && { titleType: type }),
+      ...(genre && {
         genres: {
           some: {
-            name: {
-              equals: genre,
-              mode: 'insensitive', // Changed this
-            },
+            name: { equals: genre, mode: 'insensitive' },
           },
         },
-      });
-    }
-
-    // Add year filter
-    if (year) {
-      whereConditions.push({
+      }),
+      ...(year && {
         releaseDate: {
           gte: new Date(`${year}-01-01`),
           lt: new Date(`${parseInt(year) + 1}-01-01`),
         },
-      });
-    }
-
-    const where: Prisma.TitleWhereInput = {
-      AND: whereConditions,
+      }),
     };
 
     const [data, total] = await Promise.all([

@@ -94,12 +94,12 @@ export class TitleService {
       year,
     } = query;
 
+    console.log({ search });
+
     const skip = (page - 1) * limit;
     const searchTerms = search?.trim().toLowerCase().split(/\s+/) || [];
 
-    // Build the where condition differently
     const where: Prisma.TitleWhereInput = {
-      // If there are search terms, add them
       ...(searchTerms.length > 0 && {
         OR: searchTerms.map((term) => ({
           OR: [
@@ -109,7 +109,6 @@ export class TitleService {
           ],
         })),
       }),
-      // Add other filters
       ...(type && { titleType: type }),
       ...(genre && {
         genres: {
@@ -126,62 +125,61 @@ export class TitleService {
       }),
     };
 
-    const [data, total] = await Promise.all([
-      this.prisma.title.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: [
-          { [sortBy]: sortOrder.toLowerCase() },
-          { primaryTitle: 'asc' },
-        ],
-        include: {
-          genres: true,
-          certification: true,
-          _count: {
-            select: {
-              ratings: true,
-              reviews: true,
-            },
+    // First get all results without pagination to filter by relevance score
+    const allResults = await this.prisma.title.findMany({
+      where,
+      orderBy: [{ [sortBy]: sortOrder.toLowerCase() }, { primaryTitle: 'asc' }],
+      include: {
+        genres: true,
+        certification: true,
+        _count: {
+          select: {
+            ratings: true,
+            reviews: true,
           },
         },
-      }),
-      this.prisma.title.count({ where }),
-    ]);
+      },
+    });
 
-    return {
-      data: data.map((title) => ({
+    // Calculate relevance scores and filter
+    const resultsWithScores = allResults
+      .map((title) => ({
         ...title,
         relevanceScore: this.calculateRelevanceScore(title, searchTerms),
-      })),
+      }))
+      .filter((title) => title.relevanceScore > 40);
+
+    // Apply pagination to filtered results
+    const startIndex = skip;
+    const endIndex = startIndex + limit;
+    const paginatedResults = resultsWithScores.slice(startIndex, endIndex);
+
+    return {
+      data: paginatedResults,
       meta: {
-        total,
+        total: resultsWithScores.length,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(resultsWithScores.length / limit),
       },
     };
   }
 
-  // Helper function to calculate relevance score
   private calculateRelevanceScore(title: any, searchTerms: string[]): number {
     let score = 0;
 
     searchTerms.forEach((term) => {
-      // Title match has highest weight
       if (title.primaryTitle.toLowerCase().includes(term)) {
         score += 10;
       }
       if (title.originalTitle?.toLowerCase().includes(term)) {
         score += 8;
       }
-      // Plot match has lower weight
       if (title.plot?.toLowerCase().includes(term)) {
         score += 3;
       }
     });
 
-    // Boost score based on popularity and ratings
     score += (title.popularity || 0) / 100;
     score += title.imdbRating || 0;
 

@@ -212,7 +212,7 @@ export class TitleController {
     return this.titleService.quickSearch(query);
   }
 
-  @Get('search')
+  @Get('search/full')
   @ApiOperation({ summary: 'Full search with filters' })
   async search(
     @Query(

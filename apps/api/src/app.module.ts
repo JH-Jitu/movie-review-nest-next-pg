@@ -14,6 +14,9 @@ import { WatchlistModule } from './watchlist/watchlist.module';
 import { ProductionCompanyModule } from './production-company/production-company.module';
 import { CertificationModule } from './certification/certification.module';
 import { GenreModule } from './genre/genre.module';
+import { AwardModule } from './award/award.module';
+import { CastModule } from './cast/cast.module';
+import { CrewModule } from './crew/crew.module';
 // import { GraphqlModule } from './graphql/graphql.module';
 
 @Module({
@@ -29,6 +32,9 @@ import { GenreModule } from './genre/genre.module';
     GenreModule,
     CertificationModule,
     ProductionCompanyModule,
+    AwardModule,
+    CastModule,
+    CrewModule,
     ConfigModule.forRoot({ isGlobal: true }),
     // GraphqlModule
   ],

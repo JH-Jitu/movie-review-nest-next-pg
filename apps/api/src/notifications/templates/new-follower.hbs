@@ -9,14 +9,13 @@
   </head>
   <body>
     <div class='container'>
-      <h1 class='title'>New Review on {{titleName}}</h1>
+      <h1 class='title'>New Follower Alert!</h1>
       <div class='content'>
         <p>Hi {{username}},</p>
-        <p>A new review has been posted for "{{titleName}}":</p>
-        <blockquote>{{reviewContent}}</blockquote>
-        <p>Check it out and join the discussion!</p>
+        <p>{{followerName}} is now following you!</p>
+        <p>Check out their profile and discover their movie lists and reviews.</p>
       </div>
-      <a href='{{baseUrl}}/titles/{{titleId}}' class='button'>View Review</a>
+      <a href='{{baseUrl}}/users/{{followerId}}' class='button'>View Profile</a>
     </div>
   </body>
 </html>

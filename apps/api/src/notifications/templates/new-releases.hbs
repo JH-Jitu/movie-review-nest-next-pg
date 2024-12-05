@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <style>
+      .container { padding: 20px; font-family: Arial, sans-serif; } .title {
+      color: #333; font-size: 24px; } .content { margin: 20px 0; color: #666; }
+      .movie-list { margin: 20px 0; } .movie-item { padding: 10px;
+      border-bottom: 1px solid #eee; } .button { background: #f3ce13; color:
+      black; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <h1 class='title'>New Releases You'll Love</h1>
+      <div class='content'>
+        <p>Hi {{username}},</p>
+        <p>Check out these new releases based on your interests:</p>
+        <div class='movie-list'>
+          {{#each titles}}
+            <div class='movie-item'>
+              <h3>{{primaryTitle}}</h3>
+              <p>{{plot}}</p>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+      <a href='{{baseUrl}}/recommendations' class='button'>View All
+        Recommendations</a>
+    </div>
+  </body>
+</html>

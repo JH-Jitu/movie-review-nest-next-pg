@@ -94,21 +94,11 @@ export class TitleService {
       year,
     } = query;
 
-    console.log({ search });
-
     const skip = (page - 1) * limit;
     const searchTerms = search?.trim().toLowerCase().split(/\s+/) || [];
 
-    const where: Prisma.TitleWhereInput = {
-      ...(searchTerms.length > 0 && {
-        OR: searchTerms.map((term) => ({
-          OR: [
-            { primaryTitle: { contains: term, mode: 'insensitive' } },
-            { originalTitle: { contains: term, mode: 'insensitive' } },
-            { plot: { contains: term, mode: 'insensitive' } },
-          ],
-        })),
-      }),
+    // Base where condition for non-search filters
+    const baseWhere: Prisma.TitleWhereInput = {
       ...(type && { titleType: type }),
       ...(genre && {
         genres: {
@@ -125,10 +115,9 @@ export class TitleService {
       }),
     };
 
-    // First get all results without pagination to filter by relevance score
+    // Getting all potential matches with basic filtering
     const allResults = await this.prisma.title.findMany({
-      where,
-      orderBy: [{ [sortBy]: sortOrder.toLowerCase() }, { primaryTitle: 'asc' }],
+      where: baseWhere,
       include: {
         genres: true,
         certification: true,
@@ -141,47 +130,156 @@ export class TitleService {
       },
     });
 
-    // Calculate relevance scores and filter
-    const resultsWithScores = allResults
-      .map((title) => ({
-        ...title,
-        relevanceScore: this.calculateRelevanceScore(title, searchTerms),
-      }))
-      .filter((title) => title.relevanceScore > 40);
+    // Applying fuzzy search and scoring
+    const resultsWithScores = allResults.map((title) => ({
+      ...title,
+      relevanceScore: this.calculateRelevanceScore(title, searchTerms, search),
+    }));
 
-    // Apply pagination to filtered results
-    const startIndex = skip;
-    const endIndex = startIndex + limit;
-    const paginatedResults = resultsWithScores.slice(startIndex, endIndex);
+    // Filtering and sorting by relevance score
+    const filteredResults = resultsWithScores
+      .filter((title) => title.relevanceScore > 400)
+      .sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+    // Apply pagination
+    const paginatedResults = filteredResults.slice(skip, skip + limit);
 
     return {
       data: paginatedResults,
       meta: {
-        total: resultsWithScores.length,
+        total: filteredResults.length,
         page,
         limit,
-        totalPages: Math.ceil(resultsWithScores.length / limit),
+        totalPages: Math.ceil(filteredResults.length / limit),
       },
     };
   }
 
-  private calculateRelevanceScore(title: any, searchTerms: string[]): number {
-    let score = 0;
+  private calculateSimilarity(str1: string, str2: string): number {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
 
-    searchTerms.forEach((term) => {
-      if (title.primaryTitle.toLowerCase().includes(term)) {
-        score += 10;
+    if (longer.length === 0) return 1.0;
+
+    const editDistance = (str1: string, str2: string): number => {
+      str1 = str1.toLowerCase();
+      str2 = str2.toLowerCase();
+      const costs = [];
+
+      for (let i = 0; i <= str1.length; i++) {
+        let lastValue = i;
+        for (let j = 0; j <= str2.length; j++) {
+          if (i === 0) {
+            costs[j] = j;
+          } else if (j > 0) {
+            let newValue = costs[j - 1];
+            if (str1.charAt(i - 1) !== str2.charAt(j - 1)) {
+              newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+            }
+            costs[j - 1] = lastValue;
+            lastValue = newValue;
+          }
+        }
+        if (i > 0) costs[str2.length] = lastValue;
       }
-      if (title.originalTitle?.toLowerCase().includes(term)) {
-        score += 8;
-      }
-      if (title.plot?.toLowerCase().includes(term)) {
-        score += 3;
-      }
+      return costs[str2.length];
+    };
+
+    return (longer.length - editDistance(longer, shorter)) / longer.length;
+  }
+
+  private calculateRelevanceScore(
+    title: any,
+    searchTerms: string[],
+    fullSearchQuery: string,
+  ): number {
+    let score = 0;
+    const titleLower = title.primaryTitle.toLowerCase();
+    const originalTitleLower = title.originalTitle?.toLowerCase() || '';
+    const plotLower = title.plot?.toLowerCase() || '';
+    const searchLower = fullSearchQuery.toLowerCase();
+
+    // Exact match bonuses
+    if (titleLower === searchLower) score += 1000;
+    if (originalTitleLower === searchLower) score += 800;
+
+    // Remove common words
+    const commonWords = [
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'of',
+    ];
+    const cleanSearchTerms = searchTerms.filter(
+      (term) => !commonWords.includes(term.toLowerCase()),
+    );
+
+    // Calculate similarity scores
+    const titleSimilarity = this.calculateSimilarity(searchLower, titleLower);
+    const originalTitleSimilarity = this.calculateSimilarity(
+      searchLower,
+      originalTitleLower,
+    );
+
+    score += titleSimilarity * 500;
+    score += originalTitleSimilarity * 300;
+
+    // Word by word matching
+    cleanSearchTerms.forEach((term) => {
+      // Direct contains matches
+      if (titleLower.includes(term.toLowerCase())) score += 50;
+      if (originalTitleLower.includes(term.toLowerCase())) score += 40;
+      if (plotLower.includes(term.toLowerCase())) score += 10;
+
+      // Partial word matches
+      const words = titleLower.split(' ');
+      words.forEach((word) => {
+        const wordSimilarity = this.calculateSimilarity(
+          term.toLowerCase(),
+          word,
+        );
+        if (wordSimilarity > 0.8) {
+          // 80% similarity threshold
+          score += wordSimilarity * 30;
+        }
+      });
     });
 
-    score += (title.popularity || 0) / 100;
-    score += title.imdbRating || 0;
+    // Handle specific patterns and common variations
+    const patterns = [
+      { search: /(\w+)\s*&\s*(\w+)/g, replace: '$1 and $2' },
+      { search: /pt\.?\s*(\d+)/gi, replace: 'part $1' },
+      { search: /[^\w\s]/g, replace: ' ' }, // Remove special characters
+    ];
+
+    let normalizedSearch = searchLower;
+    let normalizedTitle = titleLower;
+
+    patterns.forEach((pattern) => {
+      normalizedSearch = normalizedSearch.replace(
+        pattern.search,
+        pattern.replace,
+      );
+      normalizedTitle = normalizedTitle.replace(
+        pattern.search,
+        pattern.replace,
+      );
+    });
+
+    if (this.calculateSimilarity(normalizedSearch, normalizedTitle) > 0.8) {
+      score += 200;
+    }
+
+    // Popularity and rating bonuses
+    score += (title.popularity || 0) / 10;
+    score += (title.imdbRating || 0) * 5;
 
     return score;
   }

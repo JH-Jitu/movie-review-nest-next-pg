@@ -31,7 +31,12 @@ export class CreateTitleDto {
   @IsOptional()
   originalTitle?: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({
+    required: false,
+    type: Date,
+    example: '2024-12-25', // ISO 8601 format
+  })
+  @Type(() => Date) // Transform string to Date
   @IsDate()
   @IsOptional()
   releaseDate?: Date;

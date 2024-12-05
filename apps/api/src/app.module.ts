@@ -17,6 +17,8 @@ import { GenreModule } from './genre/genre.module';
 import { AwardModule } from './award/award.module';
 import { CastModule } from './cast/cast.module';
 import { CrewModule } from './crew/crew.module';
+import { NotificationModule } from './notifications/notification.module';
+import { RecommendationModule } from './recommendations/recommendation.module';
 // import { GraphqlModule } from './graphql/graphql.module';
 
 @Module({
@@ -35,6 +37,8 @@ import { CrewModule } from './crew/crew.module';
     AwardModule,
     CastModule,
     CrewModule,
+    NotificationModule,
+    RecommendationModule,
     ConfigModule.forRoot({ isGlobal: true }),
     // GraphqlModule
   ],

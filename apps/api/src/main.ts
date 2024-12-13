@@ -7,6 +7,13 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Enable CORS
+  app.enableCors({
+    origin: 'http://localhost:3000', // Allow your frontend origin
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allow specific HTTP methods
+    credentials: true, // Allow cookies to be sent
+  });
+
   // swagger
   const config = new DocumentBuilder()
     .setTitle('Movies API')

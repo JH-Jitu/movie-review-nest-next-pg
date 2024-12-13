@@ -11,7 +11,7 @@
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-jwt": "^4.0.1",
     "prettier": "^3.2.5",
-    "turbo": "^2.1.1",
+    "turbo": "^2.3.3",
     "typescript": "^5.4.5"
   },
   "engines": {

@@ -2,10 +2,11 @@ import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "@/config/axios";
 import { useAuthStore } from "@/stores/auth.store";
 import { createSession } from "@/lib/session";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export function useLogin() {
   const { setUser, setTokens } = useAuthStore();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
@@ -26,10 +27,19 @@ export function useLogin() {
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       });
-      redirect("/");
+      router.push("/");
       // new end
       setUser(result.user);
       setTokens(result.accessToken, result.refreshToken);
+    },
+    onError: (res) => {
+      console.log({ "check: ": res });
+      return {
+        message:
+          res?.response?.status === 401
+            ? "Invalid Credentials!123"
+            : res?.response?.message,
+      };
     },
   });
 }

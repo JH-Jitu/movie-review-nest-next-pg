@@ -50,9 +50,10 @@ const SignInForm = () => {
         message: undefined, // Reset error on success
       };
     } catch (error) {
+      console.log({ "error from signinform": error });
       return {
         error: {},
-        message: "Invalid login credentials", // Handle mutation error
+        message: error?.response?.data?.message, // Handle mutation error
       };
     }
   }

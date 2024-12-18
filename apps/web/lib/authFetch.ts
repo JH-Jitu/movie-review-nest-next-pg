@@ -11,7 +11,7 @@ export const authFetch = async (
 ) => {
   const session = await getSession();
 
-  console.log({ session });
+  // console.log({ session });
 
   options.headers = {
     ...options.headers,

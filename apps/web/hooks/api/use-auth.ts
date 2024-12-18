@@ -37,7 +37,7 @@ export function useLogin() {
       return {
         message:
           res?.response?.status === 401
-            ? "Invalid Credentials!123"
+            ? "Invalid Credentials!"
             : res?.response?.message,
       };
     },

@@ -4,14 +4,19 @@ import { getSession } from "@/lib/session";
 export default async function middleware(req: NextRequest) {
   const session = await getSession();
 
-  // console.log({ "Jitu's Session": session });
   if (!session || !session.user) {
-    return NextResponse.redirect(new URL("/auth/signin", req.nextUrl));
+    //   return NextResponse.redirect(new URL("/auth/signin", req.nextUrl));
+    return NextResponse.redirect(
+      new URL(
+        `/auth/signin?redirect=${encodeURIComponent(req.nextUrl.pathname)}`,
+        req.nextUrl
+      )
+    );
   }
 
-  NextResponse.next();
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/profile"],
+  matcher: ["/profile", "/dashboard"],
 };

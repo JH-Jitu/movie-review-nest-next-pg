@@ -82,10 +82,16 @@ axiosInstance.interceptors.response.use(
             return axiosInstance(originalRequest);
           } else {
             console.error("Refresh token failed:", refreshResponse.statusText);
+            alert("Session expired. Please sign in again.");
+            window.location.href = `/auth/signin?redirect=${encodeURIComponent(window.location.href)}`;
           }
         }
       } catch (refreshError) {
+        console.log({ checkLoc: window.location.href });
         console.error("Error during token refresh:", refreshError);
+        // alert("Session expired. Please sign in again.");
+        // window.location.href = `/auth/signin?redirect=${encodeURIComponent(window.location.href)}`;
+        return Promise.reject(refreshError);
       }
     }
 

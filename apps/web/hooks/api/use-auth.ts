@@ -30,7 +30,18 @@ export function useLogin() {
       setUser(result.user);
       setTokens(result.accessToken, result.refreshToken);
 
-      router.push("/");
+      // Step 3: Ensure session is fully available
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure session sync
+
+      // Check for redirect in query string
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirect = searchParams.get("redirect");
+
+      if (redirect) {
+        router.replace(redirect); // Redirect to the intended page
+      } else {
+        router.replace("/"); // Default to the root page
+      }
     },
     onError: (error) => {
       console.error("Login error:", error);

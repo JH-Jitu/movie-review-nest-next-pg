@@ -1,7 +1,8 @@
+"use client";
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "@/config/axios";
 import { useAuthStore } from "@/stores/auth.store";
-import { createSession } from "@/lib/session";
+import { createSession, updateTokens, deleteSession } from "@/lib/session";
 import { useRouter } from "next/navigation";
 
 export function useLogin() {
@@ -10,14 +11,11 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
-      console.log("coming this...");
       const { data } = await axiosInstance.post("/auth/signin", credentials);
       return data;
     },
     onSuccess: async (result) => {
-      // new
-      // TODO: Create The Session For Authenticated User.
-
+      // Create session for authenticated user
       await createSession({
         user: {
           id: result.id,
@@ -27,19 +25,47 @@ export function useLogin() {
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       });
-      router.push("/");
-      // new end
+
+      // Update client state
       setUser(result.user);
       setTokens(result.accessToken, result.refreshToken);
+
+      router.push("/");
     },
-    onError: (res) => {
-      console.log({ "check: ": res });
+    onError: (error) => {
+      console.error("Login error:", error);
       return {
         message:
-          res?.response?.status === 401
+          error?.response?.status === 401
             ? "Invalid Credentials!"
-            : res?.response?.message,
+            : error?.response?.statusText,
       };
+    },
+  });
+}
+
+export function useRefreshToken() {
+  const { setTokens } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (oldRefreshToken: string) => {
+      const { data } = await axiosInstance.post("/auth/refresh", {
+        refresh: oldRefreshToken,
+      });
+      return data;
+    },
+    onSuccess: async (result) => {
+      await updateTokens({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
+
+      // Update client state
+      setTokens(result.accessToken, result.refreshToken);
+    },
+    onError: (error) => {
+      console.error("Failed to refresh token:", error);
+      alert("Session expired. Please sign in again.");
     },
   });
 }
@@ -51,8 +77,12 @@ export function useLogout() {
     mutationFn: async () => {
       await axiosInstance.post("/auth/signout");
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await deleteSession();
       logout();
+    },
+    onError: (error) => {
+      console.error("Logout error:", error);
     },
   });
 }

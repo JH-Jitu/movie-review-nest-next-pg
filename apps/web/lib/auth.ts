@@ -77,7 +77,7 @@ export async function signIn(
     });
     redirect("/");
   } else {
-    console.log({ response });
+    // console.log({ response });
     return {
       message:
         response.status === 401 ? "Invalid Credentials!" : response.statusText,

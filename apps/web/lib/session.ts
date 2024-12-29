@@ -39,17 +39,21 @@ export async function createSession(payload: Session) {
 
 export async function getSession() {
   const cookie = cookies().get("session")?.value;
-  if (!cookie) return null;
+  if (!cookie) {
+    console.error("Session cookie is missing.");
+    return null;
+  }
 
   try {
     const { payload } = await jwtVerify(cookie, encodedKey, {
       algorithms: ["HS256"],
     });
 
+    // console.log("Session payload:", payload);
     return payload as Session;
   } catch (err) {
     console.error("Failed to verify the session", err);
-    redirect("/auth/sigin");
+    redirect("/auth/signin");
   }
 }
 

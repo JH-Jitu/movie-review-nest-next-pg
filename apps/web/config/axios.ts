@@ -1,4 +1,5 @@
 import { getSession, updateTokens } from "@/lib/session";
+import { useAuthStore } from "@/stores/auth.store";
 import axios from "axios";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
@@ -10,20 +11,17 @@ export const axiosInstance = axios.create({
   },
 });
 
-// Add interceptors for auth
+// Add interceptors for authorization token management
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
-      // Dynamically get session
-      const session = await getSession();
+      const session = await getSession(); // Dynamically fetch session
 
       if (session?.accessToken) {
         config.headers.Authorization = `Bearer ${session.accessToken}`;
       }
     } catch (error) {
       console.error("Error fetching session:", error);
-      // Optionally log to external service
-      // logToMonitoringService(error);
       return Promise.reject(error);
     }
 
@@ -34,74 +32,68 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-let retryCount = 0;
-const maxRetries = 3;
+// Add response interceptor for token refresh and error handling
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => response, // Pass through successful responses
   async (error) => {
     const originalRequest = error.config;
 
-    // Handle various HTTP statuses
-    if (error.response) {
-      const status = error.response.status;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      console.log("401 Error detected. Attempting to refresh token...");
 
-      if (status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
+      try {
+        // Fetch refresh token dynamically
+        const session = await getSession();
+        console.log("Current session:", session);
 
-        try {
-          const session = await getSession(); // Dynamically fetch the refresh token
-          if (session?.refreshToken) {
-            const response = await axios.post(`${baseURL}/auth/refresh`, {
-              refresh: session.refreshToken,
-            });
+        if (session?.refreshToken) {
+          const refreshResponse = await fetch(`${baseURL}/auth/refresh`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refresh: session?.refreshToken }),
+          });
 
-            const { accessToken } = response.data;
+          if (refreshResponse.ok) {
+            const { accessToken, refreshToken } = await refreshResponse.json();
+            console.log("New Access Token:", accessToken);
 
-            // Update the session with the new tokens
-            await updateTokens({
-              accessToken,
-              refreshToken: session.refreshToken,
-            });
+            // Update state
+            // await updateTokens({
+            //   accessToken,
+            //   refreshToken,
+            // });
 
+            // Retry original request with new token
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            const updateRes = await fetch(
+              "http://localhost:3000/api/auth/update",
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  accessToken,
+                  refreshToken,
+                }),
+              }
+            );
+            if (!updateRes.ok) throw new Error("Failed to update the tokens");
+
             return axiosInstance(originalRequest);
+          } else {
+            console.error("Refresh token failed:", refreshResponse.statusText);
           }
-        } catch (refreshError) {
-          console.error("Error refreshing token:", refreshError);
-          // Optionally log to external service
-          // logToMonitoringService(refreshError);
-          alert("Session expired. Please sign in again.");
-          window.location.href = `/auth/signin?redirect=${encodeURIComponent(window.location.href)}`;
-          return Promise.reject(refreshError);
         }
-      }
-
-      if (status === 403) {
-        // Handle forbidden errors
-        alert("You do not have permission to access this resource.");
-      }
-
-      if (status === 500) {
-        // Handle server errors
-        alert("Server error, please try again later.");
+      } catch (refreshError) {
+        console.error("Error during token refresh:", refreshError);
       }
     }
 
-    // Retry logic with retry count and maximum retries
-    if (retryCount < maxRetries) {
-      retryCount++;
-      return axiosInstance(originalRequest);
-    } else {
-      alert("Request failed multiple times.");
-      return Promise.reject(error);
-    }
+    return Promise.reject(error); // Pass the error if refresh fails
   }
 );
 
-// TODO: Function to log errors to an external service
+// TODO: Function to log errors to an external service (e.g., Sentry or LogRocket)
 // function logToMonitoringService(error: any) {
-//   // Send error data to external monitoring service (e.g., Sentry, LogRocket)
-//   // Example:
-//   // Sentry.captureException(error);
+//   // Example: Sentry.captureException(error);
 // }

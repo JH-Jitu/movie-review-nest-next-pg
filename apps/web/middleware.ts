@@ -4,7 +4,7 @@ import { getSession } from "@/lib/session";
 export default async function middleware(req: NextRequest) {
   const session = await getSession();
 
-  console.log({ "Jitu's Session": session });
+  // console.log({ "Jitu's Session": session });
   if (!session || !session.user) {
     return NextResponse.redirect(new URL("/auth/signin", req.nextUrl));
   }

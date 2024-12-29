@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useTitles } from "@/hooks/api/use-titles";
-import { getProfile } from "@/lib/actions";
+// import { getProfile } from "@/lib/actions";
 
 const ProfilePage = () => {
   const { data, isLoading, error } = useTitles({ page: 1, genre: "action" });

@@ -15,19 +15,22 @@ export function useLogin() {
       return data;
     },
     onSuccess: async (result) => {
+      const userObj = {
+        id: result.id,
+        name: result.name,
+        role: result.role,
+      };
+
       // Create session for authenticated user
       await createSession({
-        user: {
-          id: result.id,
-          name: result.name,
-          role: result.role,
-        },
+        user: userObj,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       });
 
       // Update client state
-      setUser(result.user);
+
+      setUser(userObj);
       setTokens(result.accessToken, result.refreshToken);
 
       // Step 3: Ensure session is fully available

@@ -1,6 +1,5 @@
-import { getSession, updateTokens } from "@/lib/session";
-import { useAuthStore } from "@/stores/auth.store";
 import axios from "axios";
+import { getSession, updateTokens } from "@/lib/session";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 
@@ -11,91 +10,92 @@ export const axiosInstance = axios.create({
   },
 });
 
+// Keep track of the refresh token promise to prevent multiple refresh calls
+let refreshTokenPromise: Promise<any> | null = null;
+
 // Add interceptors for authorization token management
 axiosInstance.interceptors.request.use(
   async (config) => {
-    try {
-      const session = await getSession(); // Dynamically fetch session
+    const session = await getSession();
 
-      if (session?.accessToken) {
-        config.headers.Authorization = `Bearer ${session.accessToken}`;
-      }
-    } catch (error) {
-      console.error("Error fetching session:", error);
-      return Promise.reject(error);
+    if (session?.accessToken) {
+      config.headers.Authorization = `Bearer ${session.accessToken}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // Add response interceptor for token refresh and error handling
-
 axiosInstance.interceptors.response.use(
-  (response) => response, // Pass through successful responses
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
+    // Only attempt refresh if it's a 401 and we haven't already tried
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.log("401 Error detected. Attempting to refresh token...");
 
       try {
-        // Fetch refresh token dynamically
-        const session = await getSession();
-        console.log("Current session:", session);
+        // If a refresh is already in progress, wait for it instead of making a new request
+        if (!refreshTokenPromise) {
+          refreshTokenPromise = (async () => {
+            const session = await getSession();
 
-        if (session?.refreshToken) {
-          const refreshResponse = await fetch(`${baseURL}/auth/refresh`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refresh: session?.refreshToken }),
-          });
+            if (!session?.refreshToken) {
+              throw new Error("No refresh token available");
+            }
 
-          if (refreshResponse.ok) {
+            const refreshResponse = await fetch(`${baseURL}/auth/refresh`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ refresh: session.refreshToken }),
+            });
+
+            if (!refreshResponse.ok) {
+              throw new Error("Failed to refresh token");
+            }
+
             const { accessToken, refreshToken } = await refreshResponse.json();
-            console.log("New Access Token:", accessToken);
 
-            // Update state
-            // await updateTokens({
-            //   accessToken,
-            //   refreshToken,
-            // });
+            // Update tokens in storage
+            await fetch("http://localhost:3000/api/auth/update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ accessToken, refreshToken }),
+            }).then((res) => {
+              if (!res.ok) throw new Error("Failed to update tokens");
+            });
 
-            // Retry original request with new token
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            const updateRes = await fetch(
-              "http://localhost:3000/api/auth/update",
-              {
-                method: "POST",
-                body: JSON.stringify({
-                  accessToken,
-                  refreshToken,
-                }),
-              }
-            );
-            if (!updateRes.ok) throw new Error("Failed to update the tokens");
+            return { accessToken, refreshToken };
+          })();
 
-            return axiosInstance(originalRequest);
-          } else {
-            console.error("Refresh token failed:", refreshResponse.statusText);
-            alert("Session expired. Please sign in again.");
-            window.location.href = `/auth/signin?redirect=${encodeURIComponent(window.location.href)}`;
-          }
+          // Clear the promise after it resolves or rejects
+          refreshTokenPromise.finally(() => {
+            refreshTokenPromise = null;
+          });
         }
+
+        // Wait for the refresh to complete
+        const { accessToken } = await refreshTokenPromise;
+
+        // Update the failed request with new token and retry
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return axiosInstance(originalRequest);
       } catch (refreshError) {
-        console.log({ checkLoc: window.location.href });
-        console.error("Error during token refresh:", refreshError);
-        // alert("Session expired. Please sign in again.");
-        // window.location.href = `/auth/signin?redirect=${encodeURIComponent(window.location.href)}`;
+        console.error("Token refresh failed:", refreshError);
+        alert(refreshError);
+        // Clear any existing refresh promise
+        refreshTokenPromise = null;
+
+        // Redirect to login
+        window.location.href = `/auth/signin?redirect=${encodeURIComponent(window.location.href)}`;
         return Promise.reject(refreshError);
       }
     }
 
-    return Promise.reject(error); // Pass the error if refresh fails
+    return Promise.reject(error);
   }
 );
 

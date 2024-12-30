@@ -36,17 +36,33 @@ export enum WatchStatus {
 }
 
 // User types
+export type UserRole = "ADMIN" | "MODERATOR" | "USER";
+
+export interface UserStats {
+  followers: number;
+  following: number;
+  reviews: number;
+  ratings: number;
+  lists: number;
+}
+
 export interface User {
   id: number;
   email: string;
   name: string;
-  role: Role;
-  createdAt: Date;
-  updatedAt: Date;
-  avatar?: string;
-  bio?: string;
-  location?: string;
-  website?: string;
+  avatar: string | null;
+  bio: string | null;
+  location: string | null;
+  website: string | null;
+  role: UserRole;
+  createdAt: string;
+  updatedAt: string;
+  _count: UserStats;
+}
+
+export interface UserResponse {
+  data: User;
+  timestamp: string;
 }
 
 // Title types

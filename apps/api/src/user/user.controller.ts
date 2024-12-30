@@ -44,8 +44,11 @@ export class UserController {
 
   @Get('me')
   @ApiOperation({ summary: 'Get current user profile' })
-  getProfile(@Request() req) {
-    return this.userService.findOne(req.user.id);
+  async getProfile(@Request() req) {
+    const user = await this.userService.findOne(req.user.id);
+    const { hashedRefreshToken, ...userWithoutToken } = user;
+
+    return userWithoutToken;
   }
 
   @Put('me')

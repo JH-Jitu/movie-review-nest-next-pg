@@ -3,13 +3,17 @@
 "use client";
 
 import React from "react";
-import { useUser } from "@/hooks/api/use-user";
+import { getAvatarUrl, useUser } from "@/hooks/api/use-user";
 import { useAuthStore } from "@/stores/auth.store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Link as LinkIcon, Mail, CalendarDays } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  ChangePasswordModal,
+  EditProfileModal,
+} from "@/components/Profile/edit-profile-modal";
 
 const ProfileSkeleton = () => (
   <div className="space-y-4">
@@ -41,14 +45,22 @@ const ProfilePage = () => {
       <Card>
         <CardHeader className="relative pb-20">
           <div className="absolute inset-0 h-32 bg-gradient-to-r from-blue-600 to-blue-400" />
-          <div className="relative z-10 flex items-end space-x-4">
-            <Avatar className="h-24 w-24 border-4 border-background">
-              <AvatarImage src={user.avatar || undefined} />
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div className="mb-2">
-              <h1 className="text-2xl font-bold text-white">{user.name}</h1>
-              <p className="text-white/80">{user.role}</p>
+          <div className="relative z-10 flex items-end justify-between">
+            <div className="flex items-end space-x-4">
+              <Avatar className="h-24 w-24 border-4 border-background">
+                <AvatarImage
+                  src={getAvatarUrl(user.avatar) || user?.avatar || undefined}
+                />
+                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="mb-2">
+                <h1 className="text-2xl font-bold text-white">{user.name}</h1>
+                <p className="text-white/80">{user.role}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <EditProfileModal user={user} />
+              <ChangePasswordModal />
             </div>
           </div>
         </CardHeader>

@@ -64,13 +64,19 @@ export class UserController {
   }
 
   @Put('me/avatar')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor(
+      'file',
+      FileUploadService.createMulterOptions('./uploads/avatars'),
+    ),
+  )
   @ApiOperation({ summary: 'Update avatar' })
   async updateAvatar(
     @Request() req,
     @UploadedFile() file: Express.Multer.File,
-    @Body('useCloudinary') useCloudinary: boolean = true,
+    @Body('useCloudinary') useCloudinary: boolean = false, //TODO: will be true - cloudinary config
   ) {
+    console.log({ file });
     const result = await this.fileUploadService.uploadFile(file, {
       useCloudinary,
       folder: 'avatars',

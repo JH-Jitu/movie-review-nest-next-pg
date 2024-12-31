@@ -17,16 +17,17 @@ export class FileUploadService {
   }
 
   // Multer configuration for local storage
-  createMulterOptions(destination: string = './uploads') {
+  static createMulterOptions(destination: string = './uploads') {
     return {
       storage: multer.diskStorage({
         destination,
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          // const uniqueSuffix =
+          //   Date.now() + '-' + Math.round(Math.random() * 1e9);
           cb(
             null,
-            `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`,
+            `${file.originalname}`,
+            // `${file.fieldname}-${uniqueSuffix}${extname(file.originalname)}`
           );
         },
       }),
@@ -70,9 +71,9 @@ export class FileUploadService {
     } = {},
   ) {
     const {
-      useCloudinary = true,
+      useCloudinary = false, //TODO: will be true - cloudinary login
       folder = 'movies',
-      destination = './uploads',
+      destination = './uploads/avatars',
     } = options;
 
     if (useCloudinary) {
@@ -81,8 +82,8 @@ export class FileUploadService {
 
     // If not using Cloudinary, file will already be saved locally by Multer
     return {
-      url: `${destination}/${file.filename}`,
-      public_id: file.filename,
+      url: `${destination}/${file.originalname}`,
+      public_id: file.originalname,
     };
   }
 }

@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import * as express from 'express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +15,11 @@ async function bootstrap() {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allow specific HTTP methods
     credentials: true, // Allow cookies to be sent
   });
+
+  const uploadPath = join(process.cwd(), 'uploads');
+  console.log('Upload path:', uploadPath); // Add this to verify the path
+
+  app.use('/uploads', express.static(uploadPath));
 
   // swagger
   const config = new DocumentBuilder()

@@ -35,8 +35,6 @@ axiosInstance.interceptors.response.use(
 
     // Only attempt refresh if it's a 401 and we haven't already tried
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
       try {
         // If a refresh is already in progress, wait for it instead of making a new request
         if (!refreshTokenPromise) {
@@ -82,6 +80,7 @@ axiosInstance.interceptors.response.use(
 
         // Update the failed request with new token and retry
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        originalRequest._retry = true;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);

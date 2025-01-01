@@ -321,7 +321,7 @@ const MobileNavItem = ({
 };
 
 const MobileMenu = () => {
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state) => state.fullUser);
 
   console.log({ user });
   const [isOpen, setIsOpen] = React.useState(false);

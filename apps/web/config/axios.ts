@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getSession, updateTokens } from "@/lib/session";
+import Router from "next/router";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
 
@@ -12,6 +13,7 @@ export const axiosInstance = axios.create({
 
 // Keep track of the refresh token promise to prevent multiple refresh calls
 let refreshTokenPromise: Promise<any> | null = null;
+let isRedirecting = false;
 
 // Add interceptors for authorization token management
 axiosInstance.interceptors.request.use(
@@ -98,6 +100,20 @@ axiosInstance.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+function handleAuthError() {
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  const currentPath = window.location.pathname;
+  if (!currentPath.includes("/auth/signin")) {
+    Router.push(`/auth/signin?redirect=${encodeURIComponent(currentPath)}`);
+  }
+
+  setTimeout(() => {
+    isRedirecting = false;
+  }, 1000);
+}
 
 // TODO: Function to log errors to an external service (e.g., Sentry or LogRocket)
 // function logToMonitoringService(error: any) {

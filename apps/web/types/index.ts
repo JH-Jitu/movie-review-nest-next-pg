@@ -60,6 +60,12 @@ export interface User {
   _count: UserStats;
 }
 
+export interface UserObj {
+  id: number;
+  name: string;
+  role: UserRole;
+}
+
 export interface UserResponse {
   data: User;
   timestamp: string;

@@ -4,6 +4,7 @@ import "./globals.css";
 import AppBar from "@/components/ui/appBar";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "sonner";
+import ClientUserProvider from "@/providers/user-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <QueryProvider>
           <Toaster />
+          <ClientUserProvider />
           <AppBar />
           {children}
         </QueryProvider>

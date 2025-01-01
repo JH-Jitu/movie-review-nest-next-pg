@@ -4,6 +4,13 @@ import { axiosInstance } from "@/config/axios";
 import { useAuthStore } from "@/stores/auth.store";
 import { createSession, updateTokens, deleteSession } from "@/lib/session";
 import { useRouter } from "next/navigation";
+import { useUser } from "./use-user";
+import { UserResponse } from "@/types";
+
+// const fetchUserProfile = async () => {
+//   const { data } = await axiosInstance.get<UserResponse>("/users/me");
+//   return data;
+// };
 
 export function useLogin() {
   const { setUser, setTokens } = useAuthStore();
@@ -30,6 +37,13 @@ export function useLogin() {
 
       // Update client state
 
+      // try {
+      //   const userProfile = await fetchUserProfile();
+      //   setUser(userProfile.data); // Update client state with the fetched profile
+      // } catch (error) {
+      //   console.error("Error fetching user profile:", error);
+      //   setUser(null); // Fallback to initial user object
+      // }
       setUser(userObj);
       setTokens(result.accessToken, result.refreshToken);
 
@@ -86,6 +100,7 @@ export function useRefreshToken() {
 
 export function useLogout() {
   const { logout } = useAuthStore();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: async () => {
@@ -94,6 +109,7 @@ export function useLogout() {
     onSuccess: async () => {
       await deleteSession();
       logout();
+      router.replace("/");
     },
     onError: (error) => {
       console.error("Logout error:", error);

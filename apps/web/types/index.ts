@@ -61,7 +61,7 @@ export interface User {
 }
 
 export interface UserObj {
-  id: number;
+  id: string | number;
   name: string;
   role: UserRole;
 }

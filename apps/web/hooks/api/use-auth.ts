@@ -6,6 +6,7 @@ import { createSession, updateTokens, deleteSession } from "@/lib/session";
 import { useRouter } from "next/navigation";
 import { useUser } from "./use-user";
 import { UserResponse } from "@/types";
+import { queryClient } from "@/lib/react-query";
 
 // const fetchUserProfile = async () => {
 //   const { data } = await axiosInstance.get<UserResponse>("/users/me");
@@ -47,6 +48,8 @@ export function useLogin() {
       setUser(userObj);
       setTokens(result.accessToken, result.refreshToken);
 
+      // Invalidate and refetch user profile
+      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       // Step 3: Ensure session is fully available
       await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure session sync
 

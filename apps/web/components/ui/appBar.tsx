@@ -1,7 +1,7 @@
 // components/layout/navbar/index.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
@@ -56,6 +56,8 @@ import { useLogout } from "@/hooks/api/use-auth";
 import { Container } from "../static-class";
 import { getAvatarUrl } from "@/hooks/api/use-user";
 
+import { Skeleton } from "@/components/ui/skeleton";
+
 const NavLink = ({
   href,
   children,
@@ -87,18 +89,39 @@ const NavLink = ({
 };
 
 const AppBar = () => {
+  const [mounted, setMounted] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const user = useAuthStore((state) => state.fullUser);
   const { mutate: logoutUser, isPending: isUpdatingState } = useLogout();
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  // During SSR and initial hydration, render a placeholder
+  if (!mounted) {
+    return (
+      <nav className={Container}>
+        <div className="flex h-14 items-center px-4">
+          <div className="flex items-center space-x-2">
+            <Film className="h-6 w-6 text-primary" />
+            <span className="hidden font-bold sm:inline-block">MovieBase</span>
+          </div>
+          <div className="grid gap-3 p-4 w-[400px] grid-cols-2">
+            <Skeleton className="block p-3 rounded-md" />
+            <Skeleton className="block p-3 rounded-md" />
+          </div>
+        </div>
+      </nav>
+    ); // Adjust height as needed
+  }
   return (
     <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
       <div className={Container}>
-        <div className="flex h-16 items-center px-4">
+        <div className="flex h-14 items-center px-4">
           <Link href="/" className="flex items-center space-x-2">
             <Film className="h-6 w-6 text-primary" />
             <span className="hidden font-bold sm:inline-block">MovieBase</span>

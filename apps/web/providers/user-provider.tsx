@@ -6,6 +6,7 @@ import { getSession } from "@/lib/session";
 import { axiosInstance } from "@/config/axios";
 import { UserObj } from "@/types";
 import { Progress } from "@/components/ui/progress";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 // import { Spinner } from "@/components/ui/Spinner"; // Assume a Spinner component exists for loading
 
 export default function AuthProvider({
@@ -117,6 +118,7 @@ export default function AuthProvider({
         <Progress className="h-4 w-64" value={progressVal} />
         {/* Replace with your preferred loading spinner component */}
       </div>
+      // <LoadingScreen size={60} />
     );
   }
 

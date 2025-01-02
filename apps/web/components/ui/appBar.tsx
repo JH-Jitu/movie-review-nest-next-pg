@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 import {
   Search,
   Menu,
-  X,
   Film,
   Tv,
   Star,
@@ -57,6 +56,7 @@ import { Container } from "../static-class";
 import { getAvatarUrl } from "@/hooks/api/use-user";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingComponent } from "./LoadingScreen";
 
 const NavLink = ({
   href,
@@ -88,7 +88,7 @@ const NavLink = ({
   );
 };
 
-const AppBar = () => {
+const AppBar: React.FC<{ loading: boolean }> = () => {
   const [mounted, setMounted] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const user = useAuthStore((state) => state.fullUser);
@@ -229,7 +229,9 @@ const AppBar = () => {
               )}
             </motion.div>
 
-            {user ? (
+            {isUpdatingState ? (
+              <LoadingComponent />
+            ) : user ? (
               <>
                 <Button variant="ghost" size="icon">
                   <Bell className="h-5 w-5" />
@@ -319,16 +321,18 @@ const MobileNavItem = ({
   href,
   icon: Icon,
   children,
+  onClick,
 }: {
   href: string;
   icon: React.ElementType;
   children: React.ReactNode;
+  onClick?: () => void;
 }) => {
   const pathname = usePathname();
   const isActive = pathname === href;
 
   return (
-    <Link href={href}>
+    <Link href={href} onClick={onClick}>
       <div
         className={`flex items-center justify-between p-3 rounded-md
         ${isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"}`}
@@ -442,12 +446,24 @@ const MobileMenu = () => {
               ) : (
                 <div className="space-y-2 pt-4">
                   <Link href="/auth/signin">
-                    <Button variant="outline" className="w-full">
+                    <MobileNavItem
+                      href="/auth/signin"
+                      icon={User}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {" "}
+                      {/* Close menu on click */}
                       Sign In
-                    </Button>
+                    </MobileNavItem>
                   </Link>
                   <Link href="/auth/signup">
-                    <Button className="w-full">Sign Up</Button>
+                    <MobileNavItem
+                      href="/auth/signup"
+                      icon={User}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Sign Up
+                    </MobileNavItem>
                   </Link>
                 </div>
               )}

@@ -85,7 +85,7 @@ export class TitleService {
   async searchTitles(query: FullSearchDto) {
     const {
       page = 1,
-      limit = 10,
+      limit = 5,
       search,
       sortBy = 'popularity',
       sortOrder = SortOrder.DESC,
@@ -289,7 +289,7 @@ export class TitleService {
   async findAll(query: PaginationQueryDto) {
     const {
       page = 1,
-      limit = 10,
+      limit = 5,
       search,
       sortBy = 'releaseDate',
       sortOrder = SortOrder.DESC,

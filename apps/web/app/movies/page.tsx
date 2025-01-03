@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Command, CommandList, CommandItem } from "@/components/ui/command";
 import { useDebounce } from "react-use";
+import Pagination from "@/components/Pagination";
 
 interface Movie {
   id: string;
@@ -45,7 +46,7 @@ const MoviesSkeleton = () => (
 const AllMoviesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [filters, setFilters] = useState<Filters>({ page: 1, limit: 10 });
+  const [filters, setFilters] = useState<Filters>({ page: 1, limit: 5 });
   const { data: movies, isLoading, error } = useTitles(filters);
   const [showCommand, setShowCommand] = useState(false);
 
@@ -87,6 +88,12 @@ const AllMoviesPage = () => {
       debouncedQuery.length > 0 && searchResults?.data?.length > 0
     );
   }, [debouncedQuery, searchResults]);
+
+  const handlePageChange = (page: number) => {
+    setFilters({ ...filters, page });
+  };
+
+  const totalMovies = movies?.meta?.total || 0;
 
   if (isLoading) return <MoviesSkeleton />;
   if (error)
@@ -155,6 +162,11 @@ const AllMoviesPage = () => {
           </Link>
         ))}
       </div>
+      <Pagination
+        currentPage={filters.page}
+        totalPages={Math.ceil(totalMovies / filters.limit)}
+        onPageChange={handlePageChange}
+      />
     </div>
   );
 };

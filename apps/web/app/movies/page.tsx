@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
-import { useTitles } from "@/hooks/api/use-titles";
+import React, { useState, useEffect } from "react";
+import { useTitles, useQuickSearch } from "@/hooks/api/use-titles";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-// import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { Command, CommandList, CommandItem } from "@/components/ui/command";
+import { useDebounce } from "react-use";
 
 interface Movie {
   id: string;
@@ -14,7 +15,12 @@ interface Movie {
   releaseDate: string;
   plot: string;
   posterUrl?: string;
-  // Add other relevant fields as needed
+}
+
+interface Filters {
+  page: number;
+  limit: number;
+  search?: string;
 }
 
 const MoviesSkeleton = () => (
@@ -37,16 +43,90 @@ const MoviesSkeleton = () => (
 );
 
 const AllMoviesPage = () => {
-  const { data: movies, isLoading, error } = useTitles();
-  console.log({ movies });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [filters, setFilters] = useState<Filters>({ page: 1, limit: 10 });
+  const { data: movies, isLoading, error } = useTitles(filters);
+  const [showCommand, setShowCommand] = useState(false);
+
+  // Debounce the search query
+  useDebounce(
+    () => {
+      setDebouncedQuery(searchQuery);
+    },
+    300,
+    [searchQuery]
+  );
+
+  // Use the debounced query for the search
+  const { data: searchResults } = useQuickSearch(debouncedQuery);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery) {
+      setFilters({ ...filters, search: searchQuery });
+    } else {
+      setFilters({ ...filters, search: undefined });
+    }
+    setShowCommand(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setShowCommand(e.target.value.length > 0);
+  };
+
+  const handleCommandSelect = (movie: Movie) => {
+    setSearchQuery(movie.primaryTitle);
+    setFilters({ ...filters, search: movie.primaryTitle });
+    setShowCommand(false);
+  };
+
+  useEffect(() => {
+    setShowCommand(
+      debouncedQuery.length > 0 && searchResults?.data?.length > 0
+    );
+  }, [debouncedQuery, searchResults]);
+
   if (isLoading) return <MoviesSkeleton />;
   if (error)
     return <div className="text-destructive">Error loading movies</div>;
-  if (!movies || movies.length === 0) return <div>No movies found.</div>;
+  if (!movies || movies?.data?.length === 0) return <div>No movies found.</div>;
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">All Movies</h1>
+      <form onSubmit={handleSearch} className="mb-4 relative">
+        <Command>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={handleInputChange}
+            placeholder="Search movies..."
+            onFocus={() => setShowCommand(searchQuery.length > 0)}
+            className="border p-2 rounded w-full"
+          />
+          {showCommand && searchResults?.data && (
+            <CommandList>
+              {searchResults.data.map((movie: Movie) => (
+                <CommandItem
+                  key={movie.id}
+                  onSelect={() => handleCommandSelect(movie)}
+                  className="hover:bg-gray-200 cursor-pointer"
+                >
+                  {movie.primaryTitle} - {movie.releaseDate}
+                </CommandItem>
+              ))}
+            </CommandList>
+          )}
+        </Command>
+        <button
+          type="submit"
+          className="mt-2 bg-blue-500 text-white p-2 rounded"
+        >
+          Search
+        </button>
+      </form>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
         {movies?.data?.map((movie: Movie) => (
           <Link key={movie.id} href={`/movie/${movie.id}`}>

@@ -72,6 +72,7 @@ export interface UserResponse {
 }
 
 // Title types
+// Title types
 export interface Title {
   id: string;
   titleType: TitleType;
@@ -99,6 +100,15 @@ export interface Title {
   color: boolean;
   aspectRatio?: string;
   parentSeriesId?: string;
+  genres: Genre[]; // Added based on the service response
+  certification: Certification[]; // Added based on the service response
+  production: ProductionCompany[]; // Added based on the service response
+  cast: CastMember[]; // Added based on the service response
+  crew: CrewMember[]; // Added based on the service response
+  reviews: Review[]; // Added based on the service response
+  ratings: Rating[]; // Added based on the service response
+  similarTo: Title[]; // Added based on the service response
+  episodes?: Episode[]; // Added based on the service response
 }
 
 // Person types

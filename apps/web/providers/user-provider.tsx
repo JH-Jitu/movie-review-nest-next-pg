@@ -63,7 +63,7 @@ export default function AuthProvider({
         return data;
       } catch (error: any) {
         if (error?.response?.status === 401 && !isAuthPage) {
-          handleUnauthorized();
+          // handleUnauthorized();
         }
         throw error;
       }

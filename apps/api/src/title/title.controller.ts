@@ -38,6 +38,7 @@ import {
   UpdateTitleDto,
 } from './title.dto';
 import { TitleService } from './title.service';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @ApiTags('titles')
 @Controller('titles')
@@ -49,6 +50,7 @@ export class TitleController {
     private readonly fileUploadService: FileUploadService,
   ) {}
 
+  @Public()
   @Get()
   @ApiOperation({ summary: 'Get all titles with pagination and filters' })
   @ApiResponse({ status: 200, description: 'Returns paginated titles' })
@@ -56,18 +58,21 @@ export class TitleController {
     return this.titleService.findAll(query);
   }
 
+  @Public()
   @Get('trending')
   @ApiOperation({ summary: 'Get trending titles' })
   async getTrending() {
     return this.titleService.getTrending();
   }
 
+  @Public()
   @Get('upcoming')
   @ApiOperation({ summary: 'Get upcoming releases' })
   async getUpcoming() {
     return this.titleService.getUpcoming();
   }
 
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get title by id' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -131,6 +136,7 @@ export class TitleController {
   }
 
   // Episodes
+  @Public()
   @Get(':id/episodes')
   @ApiOperation({ summary: 'Get all episodes for a series' })
   async getEpisodes(
@@ -168,6 +174,7 @@ export class TitleController {
   }
 
   // Cast & Crew
+  @Public()
   @Get(':id/cast')
   @ApiOperation({ summary: 'Get title cast' })
   async getCast(
@@ -177,6 +184,7 @@ export class TitleController {
     return this.titleService.getCast(id, query);
   }
 
+  @Public()
   @Get(':id/crew')
   @ApiOperation({ summary: 'Get title crew' })
   async getCrew(
@@ -187,6 +195,7 @@ export class TitleController {
   }
 
   // Reviews & Ratings
+  @Public()
   @Get(':id/reviews')
   @ApiOperation({ summary: 'Get title reviews' })
   async getReviews(
@@ -196,6 +205,7 @@ export class TitleController {
     return this.titleService.getReviews(id, query);
   }
 
+  @Public()
   @Get(':id/ratings')
   @ApiOperation({ summary: 'Get title ratings' })
   async getRatings(
@@ -206,12 +216,14 @@ export class TitleController {
   }
 
   // Search Algos
+  @Public()
   @Get('search/quick')
   @ApiOperation({ summary: 'Quick search for autocomplete' })
   async quickSearch(@Query() query: QuickSearchDto) {
     return this.titleService.quickSearch(query);
   }
 
+  @Public()
   @Get('search/full')
   @ApiOperation({ summary: 'Full search with filters' })
   async search(

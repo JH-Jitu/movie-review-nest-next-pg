@@ -22,6 +22,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import Filter from "@/components/Filter";
 
 interface Movie {
   id: string;
@@ -182,7 +183,11 @@ const AllMoviesPage = () => {
           <SheetHeader>
             <SheetTitle>Filter Movies</SheetTitle>
           </SheetHeader>
-          {/* Add filter options here */}
+          <Filter
+            onFilterChange={(filters) => {
+              setFilters((prev) => ({ ...prev, ...filters }));
+            }}
+          />
         </SheetContent>
       </Sheet>
 

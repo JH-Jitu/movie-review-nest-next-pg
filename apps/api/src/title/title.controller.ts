@@ -54,7 +54,7 @@ export class TitleController {
   @Get()
   @ApiOperation({ summary: 'Get all titles with pagination and filters' })
   @ApiResponse({ status: 200, description: 'Returns paginated titles' })
-  async findAll(@Query() query: PaginationQueryDto) {
+  async findAll(@Query() query: FullSearchDto) {
     return this.titleService.findAll(query);
   }
 

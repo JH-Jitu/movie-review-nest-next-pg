@@ -3,12 +3,14 @@ export class QueryFilters {
   static createTitleFilters(query: any) {
     const filters: any = {};
 
+    console.log('Incoming query parameters:', query);
+
     if (query.type) {
       filters.titleType = query.type;
     }
 
-    if (query.releaseYear) {
-      const year = parseInt(query.releaseYear);
+    if (query.year) {
+      const year = parseInt(query.year);
       filters.releaseDate = {
         gte: new Date(`${year}-01-01`),
         lt: new Date(`${year + 1}-01-01`),
@@ -18,18 +20,21 @@ export class QueryFilters {
     if (query.genre) {
       filters.genres = {
         some: {
-          name: query.genre,
+          name: { equals: query.genre, mode: 'insensitive' },
         },
       };
     }
 
     if (query.language) {
-      filters.originalLanguage = query.language;
+      filters.originalLanguage = {
+        equals: query.language,
+        mode: 'insensitive',
+      };
     }
 
     if (query.minRating) {
       filters.imdbRating = {
-        gte: parseFloat(query.minRating),
+        gte: parseFloat(query?.minRating),
       };
     }
 

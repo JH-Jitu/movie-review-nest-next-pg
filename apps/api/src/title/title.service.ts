@@ -286,14 +286,21 @@ export class TitleService {
 
   // Main Functions
 
-  async findAll(query: PaginationQueryDto) {
+  async findAll(query: FullSearchDto) {
     const {
       page = 1,
       limit = 5,
       search,
+      type,
+      genre,
+      year,
+      language,
+      minRating,
       sortBy = 'releaseDate',
       sortOrder = SortOrder.DESC,
     } = query;
+
+    console.log('Query parameters in findAll:', query); // Debugging line
 
     if (search) {
       return this.searchTitles(query as FullSearchDto);
@@ -301,9 +308,10 @@ export class TitleService {
 
     const skip = (page - 1) * limit;
 
+    // Create filters based on the incoming query
     const filters = QueryFilters.createTitleFilters(query);
 
-    // const limitInt = parseInt(limit?.toString());
+    console.log('Filters being applied:', filters); // Debugging line
 
     const [data, total] = await Promise.all([
       this.prisma.title.findMany({
@@ -325,6 +333,8 @@ export class TitleService {
       }),
       this.prisma.title.count({ where: filters }),
     ]);
+
+    console.log('Data returned from database:', data); // Debugging line
 
     return {
       data,

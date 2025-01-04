@@ -167,6 +167,20 @@ export class FullSearchDto {
   search?: string;
 
   @ApiPropertyOptional({
+    description: 'Language query',
+  })
+  @IsOptional()
+  @IsString()
+  language?: string;
+
+  @ApiPropertyOptional({
+    description: 'MinRating query',
+  })
+  @IsOptional()
+  @IsString()
+  minRating?: number; // Confusion
+
+  @ApiPropertyOptional({
     enum: TitleType,
     enumName: 'TitleType',
     description: 'Filter by title type',

@@ -194,7 +194,3 @@ Adding soon!
 
 - NestJS team for the excellent backend framework
 - Vercel team for Next.js and the deployment platform
-
-```
-
-```

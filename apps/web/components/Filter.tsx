@@ -7,7 +7,9 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-
+import countries from "i18n-iso-countries";
+import ISO6391 from "iso-639-1";
+import { Command, CommandInput, CommandItem, CommandList } from "./ui/command";
 interface FilterProps {
   onFilterChange: (filters: {
     genre?: string;
@@ -17,11 +19,22 @@ interface FilterProps {
   }) => void;
 }
 
+countries.registerLocale(require("i18n-iso-countries/langs/en.json")); // Load English locale
+const languageOptions = Object.entries(countries.getSupportedLanguages()).map(
+  ([code, name]) => ({
+    value: code,
+    label: name,
+  })
+);
+
 const Filter: React.FC<FilterProps> = ({ onFilterChange }) => {
   const [genre, setGenre] = useState<string>("");
   const [year, setYear] = useState<number | undefined>(undefined);
   const [language, setLanguage] = useState<string>("");
   const [minRating, setMinRating] = useState<number | undefined>(undefined);
+
+  console.log({ languageOptions });
+  console.log(countries.getNames("en", { select: "official" }));
 
   const handleApplyFilters = () => {
     onFilterChange({ genre, year, language, minRating });
@@ -39,22 +52,34 @@ const Filter: React.FC<FilterProps> = ({ onFilterChange }) => {
           <SelectItem value="Action">Action</SelectItem>
           <SelectItem value="Drama">Drama</SelectItem>
           <SelectItem value="Comedy">Comedy</SelectItem>
-          {/* Add more genres as needed */}
         </SelectContent>
       </Select>
 
       <Select
-        onValueChange={(value) => setYear(parseInt(value))}
+        onValueChange={(value) => setYear(value ? parseInt(value) : undefined)}
         value={year?.toString()}
       >
         <SelectTrigger className="w-full">
+          {/* {!year ? (
+            <SelectValue placeholder="Select Year" />
+          ) : (
+            <SelectValue>{year}</SelectValue>
+          )} */}
           <SelectValue placeholder="Select Year" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="2023">2023</SelectItem>
-          <SelectItem value="2022">2022</SelectItem>
-          <SelectItem value="2021">2021</SelectItem>
-          {/* Add more years as needed */}
+          <Command>
+            <CommandInput placeholder="Search Year..." />
+            <CommandList>
+              {Array.from({ length: 66 }, (_, i) => 2025 - i).map((year) => (
+                <CommandItem key={year} onSelect={() => setYear(year)}>
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                </CommandItem>
+              ))}
+            </CommandList>
+          </Command>
         </SelectContent>
       </Select>
 
@@ -63,10 +88,13 @@ const Filter: React.FC<FilterProps> = ({ onFilterChange }) => {
           <SelectValue placeholder="Select Language" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="English">English</SelectItem>
-          <SelectItem value="Spanish">Spanish</SelectItem>
-          <SelectItem value="French">French</SelectItem>
-          {/* Add more languages as needed */}
+          {languageOptions?.map((lang, index) => {
+            return (
+              <SelectItem key={index} value={lang.label}>
+                {ISO6391.getName(lang.label)} - {lang.label.toUpperCase()}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
 

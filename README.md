@@ -1,82 +1,200 @@
-# Turborepo starter
+# Movie Review Platform (NestJS + Next.js)
 
-This is an official starter Turborepo.
+A full-stack movie review platform built with NestJS, Next.js, and Prisma, featuring authentication, real-time notifications, and a rich user experience.
 
-## Using this example
+## 🎯 Features
 
-Run the following command:
+### Authentication & Users
 
-```sh
-npx create-turbo@latest
+- Google OAuth integration
+- JWT-based authentication
+- User profiles and preferences
+- Role-based access control
+
+### Core Functionality
+
+- Movie/TV Show cataloging
+- Detailed Movie/Title information
+- Cast and crew details
+- User reviews and ratings
+- Personalized watchlists
+- Custom user lists
+- Production company tracking
+- Awards and certifications
+- Genre categorization
+
+### Advanced Features
+
+- Real-time notifications
+- Recommendation engine
+- Caching system
+- Email notifications (via Nodemailer)
+- File uploads (via Cloudinary)
+- Swagger API documentation
+
+## 🛠 Tech Stack
+
+### Backend (NestJS)
+
+- **@nestjs/common**: Core NestJS functionalities
+- **@nestjs/core**: NestJS core module
+- **@nestjs/jwt**: JWT authentication support
+- **@nestjs/passport**: Passport.js integration for authentication
+- **@nestjs/config**: Configuration management
+- **@nestjs-modules/mailer**: Email sending capabilities
+- **@nestjs/graphql**: GraphQL support
+- **@prisma/client**: Database ORM
+- **jose**: JWT creation and verification
+- **passport-google-oauth20**: Google OAuth strategy for Passport.js
+- **passport-jwt**: JWT strategy for Passport.js
+- **zod**: Schema validation
+- **@nestjs/mapped-types**: Utility for creating mapped types
+- **@nestjs/testing**: Testing utilities for NestJS
+
+### Frontend (Next.js)
+
+- **Next.js 14**: A React framework for building server-rendered applications with features like static site generation and API routes.
+- **React**: A JavaScript library for building user interfaces.
+- **React Query**: A data-fetching library for managing server state in React applications.
+- **ShadCN**: A component library for building accessible and customizable UI components.
+- **Radix UI**: A set of unstyled, accessible components for building high-quality design systems and web applications.
+- **Tailwind CSS**: A utility-first CSS framework for rapid UI development.
+- **Framer Motion**: A library for creating animations and transitions in React applications.
+- **Zustand**: A small, fast state management solution for React applications.
+- **@tanstack/react-query-devtools**: DevTools for React Query to help visualize and debug queries.
+- **@hookform/resolvers**: Resolver for integrating React Hook Form with validation libraries.
+- **Axios**: A promise-based HTTP client for making requests to APIs.
+- **date-fns**: A modern JavaScript date utility library for parsing, formatting, and manipulating dates.
+- **clsx**: A utility for constructing className strings conditionally.
+- **framer-motion**: A library for animations and transitions in React applications.
+
+## 📦 Project Structure
+
+```
+movie-review-platform/
+├── apps/
+│   ├── api/                 # NestJS backend
+│   │   ├── src/             # Source code
+│   │   ├── prisma/          # Database schema and migrations
+│   │   └── test/            # Test cases
+│   └── web/                 # Next.js frontend
+│       ├── app/             # App router pages
+│       ├── components/      # React components
+│       └── providers/       # Context providers
+├── packages/
+│   ├── ui/                  # Shared UI components
+│   ├── eslint-config/       # ESLint configuration
+│   └── typescript-config/   # TypeScript configuration
+
 ```
 
-## What's inside?
+## 🚀 Getting Started
 
-This Turborepo includes the following packages/apps:
+### Prerequisites
 
-### Apps and Packages
+- Node.js >= 18
+- npm >= 10.8.1
+- PostgreSQL database
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### Installation
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+1. Clone the repository:
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+```bash
+git clone <repository-url>
+cd movie-review-platform
 ```
 
-### Develop
+2. Install dependencies:
 
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
+```bash
+npm install
 ```
 
-### Remote Caching
+3. Set up environment variables:
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+```bash
+# apps/api/.env
+DATABASE_URL="postgresql://..."
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+JWT_SECRET="..."
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
+# apps/web/.env
+NEXT_PUBLIC_API_URL="http://localhost:8001"
 ```
 
-## Useful Links
+4. Initialize the database:
 
-Learn more about the power of Turborepo:
+```bash
+cd apps/api
+npm run db:migrate
+npm run db:seed
+```
 
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
-# movie-review-nest-next-pg
+### Development
+
+Start the development servers:
+
+```bash
+# Root directory
+npm run dev
+```
+
+- Backend: [http://localhost:8001](http://localhost:8001)
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- API Documentation: [http://localhost:8001/api](http://localhost:8001/api)
+
+## 🧪 Testing
+
+```bash
+# Backend tests
+cd apps/api
+npm run test        # Unit tests
+npm run test:e2e    # E2E tests
+npm run test:cov    # Coverage reports
+
+# Frontend tests
+cd apps/web
+npm run test
+```
+
+## 📚 Documentation
+
+- Backend API documentation is available at `/api` when running the development server
+- Frontend component documentation (coming soon)
+
+## 🔧 Scripts
+
+### Backend
+
+```typescript:apps/api/package.json
+
+```
+
+### Frontend
+
+```typescript:apps/web/package.json
+
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 👥 Authors
+
+- Md. Jidanul Hakim Jitu - Initial work
+
+## 🙏 Acknowledgments
+
+- NestJS team for the excellent backend framework
+- Vercel team for Next.js and the deployment platform
+
+```
+
+```

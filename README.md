@@ -169,13 +169,13 @@ npm run test
 ### Backend
 
 ```typescript:apps/api/package.json
-
+Adding soon!
 ```
 
 ### Frontend
 
 ```typescript:apps/web/package.json
-
+Adding soon!
 ```
 
 ## 🤝 Contributing

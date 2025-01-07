@@ -5,6 +5,7 @@ import AppBar from "@/components/ui/appBar";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "sonner";
 import AuthProvider from "@/providers/user-provider";
+import ThemeProvider from "@/providers/theme-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,10 +31,13 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <QueryProvider>
           <AuthProvider>
-            <Toaster />
-            <AppBar />
+            <ThemeProvider>
+              <Toaster />
+
+              <AppBar loading={false} />
+              {children}
+            </ThemeProvider>
           </AuthProvider>
-          {children}
         </QueryProvider>
       </body>
     </html>

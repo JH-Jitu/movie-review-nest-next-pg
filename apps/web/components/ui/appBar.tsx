@@ -57,6 +57,7 @@ import { getAvatarUrl } from "@/hooks/api/use-user";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { LoadingComponent } from "./LoadingScreen";
+import ThemeSelector from "@/components/ui/theme-selector";
 
 const NavLink = ({
   href,
@@ -206,6 +207,7 @@ const AppBar: React.FC<{ loading: boolean }> = () => {
           </NavigationMenu>
 
           <div className="flex items-center ml-auto space-x-4">
+            <ThemeSelector />
             <motion.div
               animate={{ width: isSearchOpen ? "300px" : "40px" }}
               className="relative"

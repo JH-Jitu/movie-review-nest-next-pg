@@ -61,9 +61,21 @@ const AllMoviesPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filters, setFilters] = useState<Filters>({ page: 1, limit: 4 });
-  const { data: movies, isLoading, error } = useTitles(filters);
-  const { data: trendingMovies } = useTrendingTitles();
-  const { data: upcomingMovies } = useUpcomingTitles();
+  const {
+    data: movies,
+    isLoading: allMoviesLoading,
+    error: allMoviesError,
+  } = useTitles(filters);
+  const {
+    data: trendingMovies,
+    isLoading: trendMoviesLoading,
+    error: trendMoviesError,
+  } = useTrendingTitles();
+  const {
+    data: upcomingMovies,
+    isLoading: upcomingMoviesLoading,
+    error: upcomingMoviesError,
+  } = useUpcomingTitles();
   const [showCommand, setShowCommand] = useState(false);
 
   // Debounce the search query
@@ -111,9 +123,6 @@ const AllMoviesPage = () => {
 
   const totalMovies = movies?.meta?.total || 0;
 
-  if (isLoading) return <MoviesSkeleton />;
-  if (error)
-    return <div className="text-destructive">Error loading movies</div>;
   if (!movies || movies?.data?.length === 0) return <div>No movies found.</div>;
 
   return (
@@ -193,32 +202,40 @@ const AllMoviesPage = () => {
 
       <h2 className="text-xl font-semibold mt-8">All Movies</h2>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
-        {movies?.data?.map((movie: Movie) => (
-          <Link key={movie.id} href={`/movie/${movie.id}`}>
-            <Card className="overflow-hidden backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 h-full flex flex-col">
-              <CardHeader className="flex-grow">
-                <Image
-                  src={movie.posterUrl || "/placeholder.png"}
-                  alt={movie.primaryTitle}
-                  className="h-full w-full object-cover"
-                  width={300}
-                  height={450}
-                />
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <h2 className="text-lg font-semibold">{movie.primaryTitle}</h2>
-                <p className="text-sm text-muted-foreground">
-                  {movie.releaseDate}
-                </p>
-                <p className="text-sm">
-                  {movie.plot.length > 100
-                    ? `${movie.plot.substring(0, 100)}...`
-                    : movie.plot}
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+        {allMoviesLoading ? (
+          <MoviesSkeleton />
+        ) : allMoviesError ? (
+          <div className="text-destructive">Error loading movies</div>
+        ) : (
+          movies?.data?.map((movie: Movie) => (
+            <Link key={movie.id} href={`/movie/${movie.id}`}>
+              <Card className="overflow-hidden backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 h-full flex flex-col">
+                <CardHeader className="flex-grow">
+                  <Image
+                    src={movie.posterUrl || "/placeholder.png"}
+                    alt={movie.primaryTitle}
+                    className="h-full w-full object-cover"
+                    width={300}
+                    height={450}
+                  />
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <h2 className="text-lg font-semibold">
+                    {movie.primaryTitle}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {movie.releaseDate}
+                  </p>
+                  <p className="text-sm">
+                    {movie.plot.length > 100
+                      ? `${movie.plot.substring(0, 100)}...`
+                      : movie.plot}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))
+        )}
       </div>
 
       <Pagination

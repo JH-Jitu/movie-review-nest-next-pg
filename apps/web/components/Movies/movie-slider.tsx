@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import Image from "next/image";
+import { Title } from "../../types";
 
-const MovieCarousel = ({ movies = [] }) => {
+const MovieCarousel = ({ movies = [] }: { movies: Title[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -119,8 +120,16 @@ const MovieCarousel = ({ movies = [] }) => {
               key={currentIndex}
               className="relative z-10 flex gap-8"
               initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1, x: dragOffset }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              animate={{
+                scale: 1,
+                opacity: 1,
+                x: dragOffset,
+              }}
+              exit={{
+                scale: 0.9,
+                opacity: 0,
+                x: currentIndex > getNextIndex() ? 100 : -100,
+              }}
               transition={{
                 type: "spring",
                 stiffness: 300,

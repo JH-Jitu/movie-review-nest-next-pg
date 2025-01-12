@@ -135,6 +135,10 @@ const MovieCarousel = ({ movies = [] }: { movies: Title[] }) => {
                 stiffness: 300,
                 damping: 25,
               }}
+              drag="x"
+              dragConstraints={{ left: -100, right: 100 }}
+              onDragEnd={handleDragEnd}
+              onDrag={handleDrag}
             >
               {/* Movie Poster */}
               <div className="relative w-[300px]">

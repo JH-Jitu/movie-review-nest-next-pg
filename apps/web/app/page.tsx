@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Filter from "@/components/Filter";
 import MovieSlider from "@/components/Movies/movie-slider";
+import MovieSliderUpdated from "@/components/Movies/movie-slider-up";
 
 interface Movie {
   id: string;
@@ -199,7 +200,8 @@ const AllMoviesPage = () => {
         </SheetContent>
       </Sheet>
 
-      {movies && <MovieSlider movies={movies?.data} />}
+      {/* {movies && <MovieSlider movies={movies?.data} />} */}
+      {movies && <MovieSliderUpdated movies={movies?.data} />}
       <h2 className="text-xl font-semibold mt-8">All Movies</h2>
       {(!movies || movies?.data?.length === 0) && <div>No movies found.</div>}
       {allMoviesLoading && <MoviesSkeleton />}

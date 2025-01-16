@@ -79,9 +79,10 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
         opts={{
           align: "center",
           loop: true,
+          // containScroll: "trimSnaps",
           //   dragFree: true,
         }}
-        className="relative h-full"
+        className="relative"
       >
         <CarouselContent>
           {movies.map((movie, index) => (
@@ -123,9 +124,9 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
                     <motion.div
                       key={current}
                       className="relative z-10 flex gap-8"
-                      initial={{ scale: 0.9, opacity: 0 }}
+                      initial={{ scale: 1, opacity: 0.3 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0.9, opacity: 0 }}
+                      exit={{ scale: 1, opacity: 0.3 }}
                       transition={{
                         type: "spring",
                         stiffness: 300,
@@ -274,7 +275,7 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
         </div>
 
         {/* Progress Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute mt-8 left-1/2 -translate-x-1/2 flex gap-2">
           {[...Array(count)].map((_, i) => (
             <button
               key={i}

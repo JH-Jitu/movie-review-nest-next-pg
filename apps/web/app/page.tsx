@@ -24,7 +24,9 @@ import {
 import { Button } from "@/components/ui/button";
 import Filter from "@/components/Filter";
 import MovieSlider from "@/components/Movies/movie-slider";
-import MovieSliderUpdated from "@/components/Movies/movie-slider-up";
+import MovieSliderUpdated, {
+  TrendingMoviesSkeleton,
+} from "@/components/Movies/movie-slider-up";
 import { MovieList } from "@/components/Movies/movie-list";
 
 interface Movie {
@@ -40,7 +42,6 @@ interface Filters {
   limit: number;
   search?: string;
 }
-
 const MoviesSkeleton = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
     {Array.from({ length: 8 }).map((_, index) => (
@@ -202,11 +203,15 @@ const AllMoviesPage = () => {
       </Sheet>
 
       {/* {movies && <MovieSlider movies={movies?.data} />} */}
-      {movies && <MovieSliderUpdated movies={movies?.data} />}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">All Movies</h2>
-        {movies?.data && <MovieList data={movies.data} />}
-      </div>
+      {trendMoviesLoading && <TrendingMoviesSkeleton />}
+
+      {trendingMovies && <MovieSliderUpdated movies={trendingMovies?.data} />}
+
+      {(!trendingMovies || trendingMovies?.data?.length === 0) && (
+        <div>No movies found.</div>
+      )}
+
+      <h2 className="text-xl font-semibold mt-8">All Movies</h2>
       {(!movies || movies?.data?.length === 0) && <div>No movies found.</div>}
       {allMoviesLoading && <MoviesSkeleton />}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
@@ -232,11 +237,6 @@ const AllMoviesPage = () => {
                   <p className="text-sm text-muted-foreground">
                     {movie.releaseDate}
                   </p>
-                  <p className="text-sm">
-                    {movie.plot.length > 100
-                      ? `${movie.plot.substring(0, 100)}...`
-                      : movie.plot}
-                  </p>
                 </CardContent>
               </Card>
             </Link>
@@ -249,41 +249,6 @@ const AllMoviesPage = () => {
         totalPages={Math.ceil(totalMovies / filters.limit)}
         onPageChange={handlePageChange}
       />
-
-      <h2 className="text-xl font-semibold mt-8">Trending Movies</h2>
-      {(!trendingMovies || trendingMovies?.data?.length === 0) && (
-        <div>No movies found.</div>
-      )}
-      {trendMoviesLoading && <MoviesSkeleton />}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">
-        {trendMoviesError ? (
-          <div className="text-destructive">Error loading movies</div>
-        ) : (
-          trendingMovies?.data?.map((movie: Movie) => (
-            <Link key={movie.id} href={`/movie/${movie.id}`}>
-              <Card className="overflow-hidden backdrop-blur-sm bg-white/80 dark:bg-gray-900/80 h-full flex flex-col">
-                <CardHeader className="flex-grow">
-                  <Image
-                    src={movie.posterUrl || "/placeholder.png"}
-                    alt={movie.primaryTitle}
-                    className="h-full w-full object-cover"
-                    width={300}
-                    height={450}
-                  />
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <h2 className="text-lg font-semibold">
-                    {movie.primaryTitle}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {movie.releaseDate}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          ))
-        )}
-      </div>
 
       <h2 className="text-xl font-semibold mt-8">Upcoming Movies</h2>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4">

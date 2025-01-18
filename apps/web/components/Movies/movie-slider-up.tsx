@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
 import { Title } from "../../types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
   const [api, setApi] = useState<CarouselApi>();
@@ -292,3 +293,58 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
 };
 
 export default MovieSliderUpdated;
+
+export const TrendingMoviesSkeleton = () => (
+  <div className="relative w-full h-screen overflow-hidden">
+    <div className="flex items-center justify-center gap-16">
+      {/* Previous Movie Skeleton */}
+      <div className="relative w-[250px] opacity-50">
+        <Skeleton className="h-[375px] w-[250px] rounded-lg" />
+      </div>
+
+      {/* Current Movie Skeleton */}
+      <div className="relative z-10 flex gap-8">
+        {/* Movie Poster Skeleton */}
+        <div className="relative w-[300px]">
+          <div className="absolute -inset-2 bg-gradient-to-b from-purple-500/20 to-pink-500/20 rounded-lg blur-xl" />
+          <Skeleton className="h-[450px] w-[300px] rounded-lg" />
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+            <Skeleton className="h-10 w-32 rounded-full" />
+          </div>
+        </div>
+
+        {/* Movie Details Skeleton */}
+        <div className="max-w-xl space-y-4">
+          <Skeleton className="h-10 w-3/4" />
+          <div className="flex gap-2">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-5 w-5 rounded-full" />
+            ))}
+          </div>
+          <Skeleton className="h-24 w-full" />
+
+          {/* Cast Skeleton */}
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-20" />
+            <div className="flex gap-2">
+              {[...Array(7)].map((_, i) => (
+                <Skeleton key={i} className="h-10 w-10 rounded-full" />
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons Skeleton */}
+          <div className="flex gap-4">
+            <Skeleton className="h-12 w-32 rounded-full" />
+            <Skeleton className="h-12 w-32 rounded-full" />
+          </div>
+        </div>
+      </div>
+
+      {/* Next Movie Skeleton */}
+      <div className="relative w-[250px] opacity-50">
+        <Skeleton className="h-[375px] w-[250px] rounded-lg" />
+      </div>
+    </div>
+  </div>
+);

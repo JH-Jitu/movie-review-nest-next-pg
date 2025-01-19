@@ -103,6 +103,7 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
                       scale: 0.85,
                       opacity: 0.7,
                     }}
+                    onClick={() => api?.scrollPrev()}
                   >
                     {movies[getPrevIndex()]?.primaryTitle ||
                       movies[movies?.length - 1]?.primaryTitle ||
@@ -124,7 +125,7 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={current}
-                      className="relative z-10 flex gap-8"
+                      className="relative z-10 flex gap-8 max-w-[860px] w-full"
                       initial={{ scale: 1, opacity: 0.3 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 1, opacity: 0.3 }}
@@ -245,6 +246,7 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
                       scale: 0.85,
                       opacity: 0.7,
                     }}
+                    onClick={() => api?.scrollNext()}
                   >
                     {movies[getNextIndex()]?.primaryTitle ||
                       movies[0]?.primaryTitle ||

@@ -23,11 +23,9 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import Filter from "@/components/Filter";
-import MovieSlider from "@/components/Movies/movie-slider";
 import MovieSliderUpdated, {
   TrendingMoviesSkeleton,
 } from "@/components/Movies/movie-slider-up";
-import { MovieList } from "@/components/Movies/movie-list";
 
 interface Movie {
   id: string;

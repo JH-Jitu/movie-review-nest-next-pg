@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import Image from "next/image";
 import {
@@ -20,8 +20,6 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
 
   useEffect(() => {
     if (!api) return;
@@ -36,9 +34,6 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
 
   const getPrevIndex = () => (current - 1 + movies.length) % movies.length;
   const getNextIndex = () => (current + 1) % movies.length;
-
-  const handleDragStart = () => setIsDragging(true);
-  const handleDragEnd = () => setIsDragging(false);
 
   // Background particle effect
   const Particles = () => (

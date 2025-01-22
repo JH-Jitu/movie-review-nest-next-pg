@@ -26,6 +26,7 @@ import Filter from "@/components/Filter";
 import MovieSliderUpdated, {
   TrendingMoviesSkeleton,
 } from "@/components/Movies/movie-slider-up";
+import CelebrityList from "@/components/Celebrities/celebrity-list";
 
 interface Movie {
   id: string;
@@ -124,6 +125,21 @@ const AllMoviesPage = () => {
   };
 
   const totalMovies = movies?.meta?.total || 0;
+
+  // Add this section to fetch celebrities data
+  const celebrities = [
+    {
+      id: "1",
+      name: "Tom Cruise",
+      imageUrl: "https://example.com/tom-cruise.jpg",
+      birthDate: "July 3, 1962",
+      nationality: "American",
+      knownFor: ["Actor", "Producer"],
+      biography:
+        "Thomas Cruise Mapother IV is an American actor and producer...",
+    },
+    // Add more celebrity data here
+  ];
 
   return (
     <div className="container mx-auto p-4">
@@ -272,6 +288,9 @@ const AllMoviesPage = () => {
           </Link>
         ))}
       </div>
+
+      {/* Add the celebrities section */}
+      <CelebrityList celebrities={celebrities} />
     </div>
   );
 };

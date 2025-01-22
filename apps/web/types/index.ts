@@ -273,3 +273,14 @@ export interface Episode {
   airDate?: Date;
   plot?: string;
 }
+
+export interface Celebrity {
+  id: string;
+  name: string;
+  imageUrl: string;
+  birthDate: string;
+  nationality: string;
+  knownFor: string[];
+  biography?: string;
+  awards?: string[];
+}

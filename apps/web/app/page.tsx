@@ -131,7 +131,52 @@ const AllMoviesPage = () => {
     {
       id: "1",
       name: "Tom Cruise",
-      imageUrl: "https://example.com/tom-cruise.jpg",
+      imageUrl:
+        "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQWifBffXRM97EKYWSlB07IHlaag72syUd7p50nswq_fUnnk_85fOpOuBs0PzswP7Mr3EG8CURhIqjYZD8GebpHpw",
+      birthDate: "July 3, 1962",
+      nationality: "American",
+      knownFor: ["Actor", "Producer"],
+      biography:
+        "Thomas Cruise Mapother IV is an American actor and producer...",
+    },
+    {
+      id: "2",
+      name: "Tom Cruise",
+      imageUrl:
+        "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQWifBffXRM97EKYWSlB07IHlaag72syUd7p50nswq_fUnnk_85fOpOuBs0PzswP7Mr3EG8CURhIqjYZD8GebpHpw",
+      birthDate: "July 3, 1962",
+      nationality: "American",
+      knownFor: ["Actor", "Producer"],
+      biography:
+        "Thomas Cruise Mapother IV is an American actor and producer...",
+    },
+    {
+      id: "3",
+      name: "Tom Cruise",
+      imageUrl:
+        "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQWifBffXRM97EKYWSlB07IHlaag72syUd7p50nswq_fUnnk_85fOpOuBs0PzswP7Mr3EG8CURhIqjYZD8GebpHpw",
+      birthDate: "July 3, 1962",
+      nationality: "American",
+      knownFor: ["Actor", "Producer"],
+      biography:
+        "Thomas Cruise Mapother IV is an American actor and producer...",
+    },
+    {
+      id: "4",
+      name: "Tom Cruise",
+      imageUrl:
+        "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQWifBffXRM97EKYWSlB07IHlaag72syUd7p50nswq_fUnnk_85fOpOuBs0PzswP7Mr3EG8CURhIqjYZD8GebpHpw",
+      birthDate: "July 3, 1962",
+      nationality: "American",
+      knownFor: ["Actor", "Producer"],
+      biography:
+        "Thomas Cruise Mapother IV is an American actor and producer...",
+    },
+    {
+      id: "5",
+      name: "Tom Cruise",
+      imageUrl:
+        "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQWifBffXRM97EKYWSlB07IHlaag72syUd7p50nswq_fUnnk_85fOpOuBs0PzswP7Mr3EG8CURhIqjYZD8GebpHpw",
       birthDate: "July 3, 1962",
       nationality: "American",
       knownFor: ["Actor", "Producer"],

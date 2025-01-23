@@ -19,9 +19,18 @@ interface CelebrityListProps {
 
 const CelebrityList = ({ celebrities = [] }: CelebrityListProps) => {
   return (
-    <section className="py-12 px-4 bg-background">
+    <section className="py-16 px-4 bg-gradient-to-b from-background to-background/50">
       <div className="container mx-auto">
-        <h2 className="text-3xl font-bold mb-8">Popular Celebrities</h2>
+        <div className="flex items-center justify-between mb-12">
+          <div>
+            <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/50">
+              Popular Celebrities
+            </h2>
+            <p className="text-muted-foreground mt-2">
+              Discover trending personalities from around the world
+            </p>
+          </div>
+        </div>
 
         <Carousel
           opts={{
@@ -37,35 +46,77 @@ const CelebrityList = ({ celebrities = [] }: CelebrityListProps) => {
                 className="pl-2 md:pl-4 sm:basis-1/2 md:basis-1/3 lg:basis-1/4"
               >
                 <motion.div
-                  whileHover={{ y: -5 }}
+                  whileHover={{ y: -8, scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-muted">
+                  <Card className="group overflow-hidden bg-gradient-to-br from-card/90 to-card/50 backdrop-blur-lg border-[0.5px] border-muted/30 hover:shadow-2xl hover:shadow-primary/10 hover:border-primary/30 transition-all duration-300">
                     <CardContent className="p-0">
-                      <div className="relative h-[300px] w-full">
+                      <div className="relative h-[400px] w-full overflow-hidden">
                         <Image
                           src={
                             celebrity.imageUrl || "/placeholder-celebrity.jpg"
                           }
                           alt={celebrity.name}
                           fill
-                          className="object-cover"
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="text-xl font-semibold mb-2">
-                          {celebrity.name}
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {celebrity.knownFor?.map((role, idx) => (
-                            <Badge key={idx} variant="secondary">
-                              {role}
-                            </Badge>
-                          ))}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute top-4 right-4 flex gap-2">
+                          <Badge
+                            variant="secondary"
+                            className="bg-black/50 backdrop-blur-md border-white/10 text-white"
+                          >
+                            {celebrity.category || "Entertainment"}
+                          </Badge>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          <p>Born: {celebrity.birthDate}</p>
-                          <p>Nationality: {celebrity.nationality}</p>
+                      </div>
+                      <div className="relative p-6 bg-gradient-to-b from-background/80 to-background backdrop-blur-sm">
+                        <div className="absolute -top-8 left-6 h-16 w-16 rounded-full border-4 border-background overflow-hidden">
+                          <Image
+                            src={
+                              celebrity.avatarUrl ||
+                              celebrity.imageUrl ||
+                              "/placeholder-avatar.jpg"
+                            }
+                            alt={`${celebrity.name} avatar`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div className="pt-8">
+                          <h3 className="text-2xl font-bold tracking-tight mb-2 text-foreground/90">
+                            {celebrity.name}
+                          </h3>
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {celebrity.knownFor?.map((role, idx) => (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="bg-primary/5 hover:bg-primary/10 text-primary/80 border-primary/20 transition-colors duration-200"
+                              >
+                                {role}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="space-y-3 text-sm">
+                            <p className="flex items-center gap-3 text-muted-foreground/80">
+                              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                                🎂
+                              </span>
+                              <span className="font-medium">
+                                {celebrity.birthDate}
+                              </span>
+                            </p>
+                            <p className="flex items-center gap-3 text-muted-foreground/80">
+                              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                                🌍
+                              </span>
+                              <span className="font-medium">
+                                {celebrity.nationality}
+                              </span>
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -74,8 +125,8 @@ const CelebrityList = ({ celebrities = [] }: CelebrityListProps) => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="hidden md:flex -left-12 hover:bg-primary hover:text-white transition-colors duration-200" />
+          <CarouselNext className="hidden md:flex -right-12 hover:bg-primary hover:text-white transition-colors duration-200" />
         </Carousel>
       </div>
     </section>

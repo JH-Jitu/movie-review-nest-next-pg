@@ -15,6 +15,7 @@ import {
 import Autoplay from "embla-carousel-autoplay";
 import { Title } from "../../types";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
   const [api, setApi] = useState<CarouselApi>();
@@ -155,9 +156,11 @@ const MovieSliderUpdated = ({ movies = [] }: { movies: Title[] }) => {
 
                       {/* Movie Details */}
                       <div className="text-white max-w-xl">
-                        <h1 className="text-4xl font-bold mb-3">
-                          {movie?.primaryTitle || "Movie Title"}
-                        </h1>
+                        <Link href={`/movie/${movie.id}`}>
+                          <h1 className="text-4xl font-bold mb-3">
+                            {movie?.primaryTitle || "Movie Title"}
+                          </h1>
+                        </Link>
 
                         {/* Rating Stars */}
                         <div className="flex items-center gap-2 mb-4">

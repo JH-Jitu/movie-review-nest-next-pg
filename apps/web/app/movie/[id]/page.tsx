@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 import {
   Play,
   Star,
@@ -18,9 +19,16 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Facebook,
+  Twitter,
+  LinkIcon,
+  Mail,
 } from "lucide-react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@radix-ui/react-dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
 
 const MovieSkeleton = () => (
   <div className="container mx-auto p-4 space-y-6">
@@ -44,23 +52,35 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
   const [showTrailer, setShowTrailer] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  const [comment, setComment] = useState("");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle comment submission
+    console.log({ name, email, comment });
+  };
+
   if (isLoading) return <MovieSkeleton />;
   if (error) return <div className="text-destructive">Error loading movie</div>;
   if (!movie) return null;
 
   const images = [movie?.posterUrl, ...(movie?.screenshots || [])];
-
+  console.log({ images });
   return (
     <div className="relative min-h-screen">
       {/* Hero Section with Backdrop */}
       <div className="absolute top-0 left-0 w-full h-[70vh] overflow-hidden">
-        <Image
-          src={movie?.backdropUrl || movie?.posterUrl}
-          alt="backdrop"
-          fill
-          className="object-cover"
-          priority
-        />
+        {(movie?.backdropUrl || movie?.posterUrl) && (
+          <Image
+            src={movie?.backdropUrl || movie?.posterUrl}
+            alt="backdrop"
+            fill
+            className="object-cover"
+            priority
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background" />
       </div>
 
@@ -74,47 +94,60 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
           {/* Left Column - Poster and Images */}
           <div className="lg:w-1/3">
             <div className="relative group">
-              <motion.div
-                className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl"
-                layoutId={`movie-poster-${movie?.id}`}
-              >
-                <Image
-                  src={images[currentImageIndex]}
-                  alt={movie?.primaryTitle}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="text-white"
-                      onClick={() =>
-                        setCurrentImageIndex(
-                          (prev) => (prev - 1 + images.length) % images.length
-                        )
-                      }
-                      disabled={images.length <= 1}
-                    >
-                      <ChevronLeft className="h-6 w-6" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="text-white"
-                      onClick={() =>
-                        setCurrentImageIndex(
-                          (prev) => (prev + 1) % images.length
-                        )
-                      }
-                      disabled={images.length <= 1}
-                    >
-                      <ChevronRight className="h-6 w-6" />
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
+              <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-2xl">
+                {images?.length > 0 ? (
+                  <>
+                    {images[currentImageIndex] === null ? (
+                      "No Image"
+                    ) : (
+                      <Image
+                        src={images[currentImageIndex]}
+                        alt={movie?.primaryTitle}
+                        fill
+                        className="object-cover"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="text-white"
+                          onClick={() =>
+                            setCurrentImageIndex(
+                              (prev) =>
+                                (prev - 1 + images.length) % images.length
+                            )
+                          }
+                          disabled={images.length <= 1}
+                        >
+                          <ChevronLeft className="h-6 w-6" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="text-white"
+                          onClick={() =>
+                            setCurrentImageIndex(
+                              (prev) => (prev + 1) % images.length
+                            )
+                          }
+                          disabled={images.length <= 1}
+                        >
+                          <ChevronRight className="h-6 w-6" />
+                        </Button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <Image
+                    src="/images/placeholder.jpg"
+                    alt="Movie placeholder"
+                    fill
+                    className="object-cover"
+                  />
+                )}
+              </div>
             </div>
 
             {/* Action Buttons */}
@@ -132,13 +165,13 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
           {/* Right Column - Movie Details */}
           <div className="lg:w-2/3 space-y-8">
             <div>
-              <h1
+              <motion.h1
                 className="text-4xl md:text-5xl font-bold text-white mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 {movie?.primaryTitle}
-              </h1>
+              </motion.h1>
 
               <div className="flex flex-wrap gap-4 text-white/80 mb-6">
                 <div className="flex items-center gap-2">
@@ -147,11 +180,19 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
-                  <span>{movie?.runtime} min</span>
+                  <span>
+                    {Math.floor(movie?.runtime / 60)}h {movie?.runtime % 60}m
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
-                  <span>{movie?.releaseDate}</span>
+                  <span>
+                    {new Date(movie?.releaseDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
               </div>
 
@@ -215,6 +256,127 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
           </div>
         </div>
       </motion.div>
+
+      <div className="container mx-auto py-12">
+        <div className="grid grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="col-span-2 space-y-8">
+            {/* Overview */}
+            <Card className="backdrop-blur-md bg-white/10 dark:bg-gray-900/10 border-none shadow-xl">
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-bold mb-4 text-white">Overview</h2>
+                <p className="text-white/80 leading-relaxed">{movie?.plot}</p>
+              </CardContent>
+            </Card>
+
+            {/* Comments Section */}
+            <Card className="backdrop-blur-md bg-white/10 dark:bg-gray-900/10 border-none shadow-xl">
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-bold mb-6 text-white">
+                  Leave a Reply
+                </h2>
+                <form onSubmit={handleCommentSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      placeholder="Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="bg-white/20 border-none placeholder:text-white/60 text-white"
+                    />
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="bg-white/20 border-none placeholder:text-white/60 text-white"
+                    />
+                  </div>
+                  <Textarea
+                    placeholder="Your comment..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={6}
+                    className="bg-white/20 border-none placeholder:text-white/60 text-white"
+                  />
+                  <Button
+                    type="submit"
+                    className="bg-white/20 hover:bg-white/30 text-white"
+                  >
+                    Post Comment
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-8">
+            {/* Movie Details */}
+            <Card className="backdrop-blur-md bg-white/10 dark:bg-gray-900/10 border-none shadow-xl">
+              <CardContent className="p-6 space-y-4">
+                <div>
+                  <h3 className="font-semibold mb-2 text-white">
+                    Release Date
+                  </h3>
+                  <p className="text-white/80">
+                    {format(new Date(movie?.releaseDate), "MMMM d, yyyy")}
+                  </p>
+                </div>
+                <Separator className="bg-white/20" />
+                <div>
+                  <h3 className="font-semibold mb-2 text-white">Runtime</h3>
+                  <p className="text-white/80">
+                    {Math.floor(movie?.runtime / 60)}h {movie?.runtime % 60}m
+                  </p>
+                </div>
+                <Separator className="bg-white/20" />
+                <div>
+                  <h3 className="font-semibold mb-2 text-white">Share</h3>
+                  <div className="flex gap-4">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-white hover:bg-white/20"
+                    >
+                      <Facebook className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-white hover:bg-white/20"
+                    >
+                      <Twitter className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-white hover:bg-white/20"
+                    >
+                      <Mail className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-white hover:bg-white/20"
+                    >
+                      <LinkIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Advertisement Space */}
+            <Card className="backdrop-blur-md bg-white/10 dark:bg-gray-900/10 border-none shadow-xl">
+              <CardContent className="p-6">
+                <div className="aspect-square bg-white/5 rounded-lg flex items-center justify-center">
+                  <p className="text-white/60">Advertisement</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
 
       {/* Trailer Dialog */}
       <Dialog open={showTrailer} onOpenChange={setShowTrailer}>

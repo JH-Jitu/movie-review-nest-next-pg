@@ -112,7 +112,7 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="text-white"
+                          className=""
                           onClick={() =>
                             setCurrentImageIndex(
                               (prev) =>
@@ -126,7 +126,7 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="text-white"
+                          className=""
                           onClick={() =>
                             setCurrentImageIndex(
                               (prev) => (prev + 1) % images.length
@@ -166,14 +166,14 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
           <div className="lg:w-2/3 space-y-8">
             <div>
               <motion.h1
-                className="text-4xl md:text-5xl font-bold text-white mb-4"
+                className="text-4xl md:text-5xl font-bold mb-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
                 {movie?.primaryTitle}
               </motion.h1>
 
-              <div className="flex flex-wrap gap-4 text-white/80 mb-6">
+              <div className="flex flex-wrap gap-4  mb-6">
                 <div className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-yellow-500" />
                   <span className="font-semibold">{movie?.imdbRating}</span>
@@ -196,14 +196,12 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
                 </div>
               </div>
 
-              <p className="text-lg text-white/80 leading-relaxed">
-                {movie?.plot}
-              </p>
+              <p className="text-lg  leading-relaxed">{movie?.plot}</p>
             </div>
 
             {/* Genres */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-white">Genres</h2>
+              <h2 className="text-xl font-semibold ">Genres</h2>
               <div className="flex flex-wrap gap-2">
                 {movie?.genres.map((genre) => (
                   <Badge
@@ -220,34 +218,26 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
             {/* Production & Certification */}
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-white">Production</h2>
+                <h2 className="text-xl font-semibold ">Production</h2>
                 <div className="space-y-2">
                   {movie?.production.map((prod) => (
-                    <div
-                      key={prod.id}
-                      className="flex items-center gap-2 text-white/80"
-                    >
+                    <div key={prod.id} className="flex items-center gap-2 ">
                       <Globe className="h-4 w-4" />
                       <span>{prod.name}</span>
-                      <span className="text-white/60">({prod.country})</span>
+                      <span className="/60">({prod.country})</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-white">
-                  Certification
-                </h2>
+                <h2 className="text-xl font-semibold ">Certification</h2>
                 <div className="space-y-2">
                   {movie?.certification.map((cert) => (
-                    <div
-                      key={cert.id}
-                      className="flex items-center gap-2 text-white/80"
-                    >
+                    <div key={cert.id} className="flex items-center gap-2 ">
                       <Award className="h-4 w-4" />
                       <span>{cert.type}</span>
-                      <span className="text-white/60">({cert.country})</span>
+                      <span className="/60">({cert.country})</span>
                     </div>
                   ))}
                 </div>
@@ -262,33 +252,31 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
           {/* Main Content */}
           <div className="col-span-2 space-y-8">
             {/* Overview */}
-            <Card className="backdrop-blur-md bg-white/10 dark:bg-gray-900/10 border-none shadow-xl">
+            <Card className="backdrop-blur-md bg-white/5 border shadow-lg border-none">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-bold mb-4 text-white">Overview</h2>
-                <p className="text-white/80 leading-relaxed">{movie?.plot}</p>
+                <h2 className="text-2xl font-bold mb-4 ">Overview</h2>
+                <p className=" leading-relaxed">{movie?.plot}</p>
               </CardContent>
             </Card>
 
             {/* Comments Section */}
-            <Card className="backdrop-blur-md bg-white/10 dark:bg-gray-900/10 border-none shadow-xl">
+            <Card className="backdrop-blur-md bg-white/5 border shadow-lg border-none">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-bold mb-6 text-white">
-                  Leave a Reply
-                </h2>
+                <h2 className="text-2xl font-bold mb-6 ">Leave a Reply</h2>
                 <form onSubmit={handleCommentSubmit} className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <Input
                       placeholder="Name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="bg-white/20 border-none placeholder:text-white/60 text-white"
+                      className="bg-white/20 border-none placeholder:/60 "
                     />
                     <Input
                       type="email"
                       placeholder="Email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-white/20 border-none placeholder:text-white/60 text-white"
+                      className="bg-white/20 border-none placeholder:/60 "
                     />
                   </div>
                   <Textarea
@@ -296,11 +284,11 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     rows={6}
-                    className="bg-white/20 border-none placeholder:text-white/60 text-white"
+                    className="bg-white/20 border-none placeholder:/60 "
                   />
                   <Button
                     type="submit"
-                    className="bg-white/20 hover:bg-white/30 text-white"
+                    className="bg-white/20 hover:bg-white/30 "
                   >
                     Post Comment
                   </Button>
@@ -312,52 +300,50 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Movie Details */}
-            <Card className="backdrop-blur-md bg-white/10 dark:bg-gray-900/10 border-none shadow-xl">
+            <Card className="backdrop-blur-md bg-white/5 border shadow-lg border-none">
               <CardContent className="p-6 space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2 text-white">
-                    Release Date
-                  </h3>
-                  <p className="text-white/80">
+                  <h3 className="font-semibold mb-2 ">Release Date</h3>
+                  <p className="">
                     {format(new Date(movie?.releaseDate), "MMMM d, yyyy")}
                   </p>
                 </div>
                 <Separator className="bg-white/20" />
                 <div>
-                  <h3 className="font-semibold mb-2 text-white">Runtime</h3>
-                  <p className="text-white/80">
+                  <h3 className="font-semibold mb-2 ">Runtime</h3>
+                  <p className="">
                     {Math.floor(movie?.runtime / 60)}h {movie?.runtime % 60}m
                   </p>
                 </div>
                 <Separator className="bg-white/20" />
                 <div>
-                  <h3 className="font-semibold mb-2 text-white">Share</h3>
+                  <h3 className="font-semibold mb-2 ">Share</h3>
                   <div className="flex gap-4">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="text-white hover:bg-white/20"
+                      className=" hover:bg-white/20"
                     >
                       <Facebook className="h-4 w-4" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="text-white hover:bg-white/20"
+                      className=" hover:bg-white/20"
                     >
                       <Twitter className="h-4 w-4" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="text-white hover:bg-white/20"
+                      className=" hover:bg-white/20"
                     >
                       <Mail className="h-4 w-4" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="text-white hover:bg-white/20"
+                      className=" hover:bg-white/20"
                     >
                       <LinkIcon className="h-4 w-4" />
                     </Button>
@@ -367,10 +353,10 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
             </Card>
 
             {/* Advertisement Space */}
-            <Card className="backdrop-blur-md bg-white/10 dark:bg-gray-900/10 border-none shadow-xl">
+            <Card className="backdrop-blur-md dark:bg-white/5 bg-black/5 border-none">
               <CardContent className="p-6">
                 <div className="aspect-square bg-white/5 rounded-lg flex items-center justify-center">
-                  <p className="text-white/60">Advertisement</p>
+                  <p className="/60">Advertisement</p>
                 </div>
               </CardContent>
             </Card>
@@ -391,7 +377,7 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
             <Button
               size="icon"
               variant="ghost"
-              className="absolute top-2 right-2 text-white"
+              className="absolute top-2 right-2 "
               onClick={() => setShowTrailer(false)}
             >
               <X className="h-6 w-6" />

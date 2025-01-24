@@ -4,8 +4,7 @@
 
 import React, { useState } from "react";
 import { getAvatarUrl, useUser } from "@/hooks/api/use-user";
-import { useAuthStore } from "@/stores/auth.store";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -14,51 +13,52 @@ import {
   Mail,
   CalendarDays,
   CheckIcon,
+  Star,
+  Users,
+  FileText,
+  List,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { motion, AnimatePresence } from "framer-motion";
-
+import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   ChangePasswordModal,
   EditProfileModal,
 } from "@/components/Profile/edit-profile-modal";
-import { Container } from "@/components/static-class";
 
 const ProfileSkeleton = () => (
-  <div className={Container}>
-    <div className="space-y-4 p-8">
-      <div className="flex items-center space-x-4">
-        <Skeleton className="h-24 w-24 rounded-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-32" />
-        </div>
-      </div>
-      <Skeleton className="h-48 w-full" />
-    </div>
+  <div className="container mx-auto p-4 space-y-6">
+    <Card className="overflow-hidden backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
+      <CardHeader className="relative pb-20">
+        <Skeleton className="h-32 w-full rounded-md" />
+      </CardHeader>
+      <CardContent className="backdrop-blur-sm">
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-full" />
+      </CardContent>
+    </Card>
   </div>
 );
 
-const StatsCard = ({ label, value }: { label: string; value: number }) => (
-  <motion.div
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    className="group"
-  >
-    <Card className="transition-shadow duration-200 hover:shadow-lg">
-      <CardContent className="p-4">
-        <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
-          {label}
-        </p>
-        <p className="text-2xl font-bold">{value}</p>
-      </CardContent>
-    </Card>
-  </motion.div>
+const StatsCard = ({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: number;
+}) => (
+  <div className="flex items-center gap-2">
+    <Icon className="h-5 w-5" />
+    <span className="font-semibold">{value}</span>
+    <span className="text-muted-foreground">{label}</span>
+  </div>
 );
 
 const ProfilePage = () => {
   const [copied, setCopied] = useState("");
-
   const { data: userResponse, isLoading, error } = useUser();
   const user = userResponse?.data;
 
@@ -67,136 +67,135 @@ const ProfilePage = () => {
     return <div className="text-destructive">Error loading profile</div>;
   if (!user) return null;
 
-  const handleCopy = (text: string, type: string) => {
-    navigator?.clipboard?.writeText(text || "Nothing");
-    setCopied(type);
-    setTimeout(() => setCopied(""), 2000); // Reset after 2 seconds
-  };
+  // const handleCopy = (text: string, type: string) => {
+  //   navigator?.clipboard?.writeText(text || "Nothing");
+  //   setCopied(type);
+  //   setTimeout(() => setCopied(""), 2000);
+  // };
+  // onClick={() => handleCopy(user?.email || "Nothing", "email")}
 
   return (
-    <motion.div className="container mx-auto p-4 space-y-6">
-      <Card className="overflow-hidden backdrop-blur-sm bg-white/80 dark:bg-gray-900/80">
-        <CardHeader className="relative pb-20">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute inset-0 h-32 bg-gradient-to-r from-blue-600 to-blue-400"
-          />
-          <div className="relative z-10 flex items-end justify-between">
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="flex items-end space-x-4"
-            >
-              <Avatar className="h-24 w-24 border-4 border-background ring-2 ring-primary/20 transition-transform hover:scale-105">
+    <div className="relative min-h-screen">
+      {/* Hero Section with Backdrop */}
+      <div className="absolute top-0 left-0 w-full h-[70vh] overflow-hidden">
+        {/* <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-purple-600/30" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-background" /> */}
+      </div>
+
+      {/* Main Content */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative pt-32 container mx-auto px-4"
+      >
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left Column - Avatar and Stats */}
+          <div className="lg:w-1/3">
+            <div className="relative aspect-square rounded-lg overflow-hidden backdrop-blur-md bg-white/5 border shadow-lg border-none">
+              <Avatar className="w-full h-full p-6">
                 <AvatarImage
                   src={getAvatarUrl(user.avatar) || user?.avatar || undefined}
+                  className="object-cover"
                 />
-                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                <AvatarFallback className="text-6xl">
+                  {user?.name?.charAt(0)}
+                </AvatarFallback>
               </Avatar>
-              <div className="mb-2">
-                <h1 className="text-2xl font-bold text-white text-shadow">
-                  {user.name}
-                </h1>
-                <p className="text-white/80">{user.role}</p>
-              </div>
-            </motion.div>
-            <div className="flex gap-2">
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 mt-6">
               <EditProfileModal user={user} />
               <ChangePasswordModal />
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
-          >
-            {user.bio && (
-              <p className="text-muted-foreground leading-relaxed">
-                {user.bio}
-              </p>
-            )}
 
-            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-              {user.location && (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-1 hover:text-primary transition-colors"
-                >
-                  <MapPin className="h-4 w-4" />
-                  {user.location}
-                </motion.div>
+          {/* Right Column - User Details */}
+          <div className="lg:w-2/3 space-y-8">
+            <div>
+              <motion.h1
+                className="text-4xl md:text-5xl font-bold mb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {user.name}
+              </motion.h1>
+
+              <div className="flex flex-wrap gap-4 mb-6">
+                <StatsCard
+                  icon={Users}
+                  label="Followers"
+                  value={user._count.followers}
+                />
+                <StatsCard
+                  icon={Users}
+                  label="Following"
+                  value={user._count.following}
+                />
+                <StatsCard
+                  icon={FileText}
+                  label="Reviews"
+                  value={user._count.reviews}
+                />
+                <StatsCard
+                  icon={Star}
+                  label="Ratings"
+                  value={user._count.ratings}
+                />
+                <StatsCard
+                  icon={List}
+                  label="Lists"
+                  value={user._count.lists}
+                />
+              </div>
+
+              {user.bio && (
+                <p className="text-lg leading-relaxed">{user.bio}</p>
               )}
+            </div>
 
-              {user.website && (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  className="flex items-center gap-1"
-                >
-                  <div
-                    onClick={() =>
-                      handleCopy(user?.website || "Nothing", "website")
-                    }
-                    className="relative"
-                  >
-                    {copied === "website" ? (
-                      <CheckIcon className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <LinkIcon className="h-4 w-4 cursor-pointer" />
-                    )}
+            {/* User Info */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold">Contact Information</h2>
+              <div className="space-y-2">
+                {user.location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>{user.location}</span>
                   </div>
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href={user.website}
-                    className="hover:underline hover:text-[#2563eb] transition-colors"
-                  >
-                    {user.website}
-                  </a>
-                </motion.div>
-              )}
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-1"
-              >
-                <div
-                  onClick={() => handleCopy(user?.email || "Nothing", "email")}
-                  className="relative"
-                >
-                  {copied === "email" ? (
-                    <CheckIcon className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Mail className="h-4 w-4 cursor-pointer" />
-                  )}
+                )}
+                {user.website && (
+                  <div className="flex items-center gap-2">
+                    <LinkIcon className="h-4 w-4" />
+                    <a
+                      href={user.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-primary"
+                    >
+                      {user.website}
+                    </a>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  <span>{user.email}</span>
                 </div>
-                {user.email}
-              </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-1"
-              >
-                <CalendarDays className="h-4 w-4" />
-                Joined{" "}
-                {formatDistanceToNow(new Date(user.createdAt), {
-                  addSuffix: true,
-                })}
-              </motion.div>
-              {/* Similar motion.div for other info items */}
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  <span>
+                    Joined{" "}
+                    {formatDistanceToNow(new Date(user.createdAt), {
+                      addSuffix: true,
+                    })}
+                  </span>
+                </div>
+              </div>
             </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6">
-              <StatsCard label="Followers" value={user._count.followers} />
-              <StatsCard label="Following" value={user._count.following} />
-              <StatsCard label="Reviews" value={user._count.reviews} />
-              <StatsCard label="Ratings" value={user._count.ratings} />
-              <StatsCard label="Lists" value={user._count.lists} />
-            </div>
-          </motion.div>
-        </CardContent>
-      </Card>
-    </motion.div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

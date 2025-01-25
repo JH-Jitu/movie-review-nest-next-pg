@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { Comment, User } from "@/types";
+import Image from "next/image";
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -77,10 +78,12 @@ const CommentSection = ({
       >
         <div className="flex gap-4 p-4 rounded-lg bg-card/50 backdrop-blur-sm border border-muted/30">
           <Avatar className="w-10 h-10">
-            <img
+            <Image
               src={comment.user.avatar || "/placeholder-avatar.jpg"}
               alt={comment.user.name}
               className="object-cover"
+              width={40}
+              height={40}
             />
           </Avatar>
 

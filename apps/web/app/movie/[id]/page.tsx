@@ -29,6 +29,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
+import CommentSection from "@/components/Comments/comment-section";
+import type { Comment as MovieComment, User } from "@/types";
 
 const MovieSkeleton = () => (
   <div className="container mx-auto p-4 space-y-6">
@@ -60,6 +62,46 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
     e.preventDefault();
     // Handle comment submission
     console.log({ name, email, comment });
+  };
+
+  const handleAddComment = async (content: string, parentId?: string) => {
+    // Implement your comment creation logic here
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    // Implement your comment deletion logic here
+  };
+
+  const handleLikeComment = async (commentId: string) => {
+    // Implement your like/unlike logic here
+  };
+
+  // Add mock comments data
+  const mockComments: MovieComment[] = [
+    {
+      id: "1",
+      content: "Great movie!",
+      userId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      user: {
+        id: 1,
+        name: "John Doe",
+        email: "john@example.com",
+        avatar: "/placeholder-avatar.jpg",
+        role: "USER",
+      },
+      likesCount: 5,
+    },
+  ];
+
+  // Add mock current user
+  const mockCurrentUser: User = {
+    id: 1,
+    name: "John Doe",
+    email: "john@example.com",
+    avatar: "/placeholder-avatar.jpg",
+    role: "USER",
   };
 
   if (isLoading) return <MovieSkeleton />;
@@ -295,6 +337,14 @@ const MoviePage = ({ params }: { params: { id: string } }) => {
                 </form>
               </CardContent>
             </Card>
+
+            <CommentSection
+              comments={mockComments}
+              currentUser={mockCurrentUser}
+              onAddComment={handleAddComment}
+              onDeleteComment={handleDeleteComment}
+              onLikeComment={handleLikeComment}
+            />
           </div>
 
           {/* Sidebar */}

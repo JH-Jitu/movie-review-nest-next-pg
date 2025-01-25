@@ -198,12 +198,14 @@ export interface Rating {
 
 export interface Comment {
   id: string;
-  reviewId: string;
-  userId: number;
   content: string;
+  userId: number;
+  parentId?: string;
   createdAt: Date;
   updatedAt: Date;
   user: User;
+  likesCount?: number;
+  isLiked?: boolean;
 }
 
 // List types

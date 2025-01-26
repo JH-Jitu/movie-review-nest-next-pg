@@ -54,13 +54,13 @@ export function useLogin() {
       await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay to ensure session sync
 
       // Check for redirect in query string
-      const searchParams = new URLSearchParams(window.location.search);
+      const searchParams = new URLSearchParams(window?.location?.search);
       const redirect = searchParams.get("redirect");
 
       if (redirect) {
         router.replace(redirect); // Redirect to the intended page
       } else {
-        router.replace("/"); // Default to the root page
+        router.push("/"); // Default to the root page
       }
     },
     onError: (error) => {

@@ -16,7 +16,7 @@ import { axiosInstance } from "@/config/axios";
 
 function ReviewsFeedSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 container mx-auto">
       {[...Array(3)].map((_, i) => (
         <div key={i} className="space-y-4">
           <div className="flex items-center space-x-4">
@@ -36,7 +36,6 @@ function ReviewsFeedSkeleton() {
 export default function ReviewsFeed() {
   const user = useAuthStore((state) => state.fullUser);
   const queryClient = useQueryClient();
-  const lastReviewRef = useRef<HTMLDivElement>(null);
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
       queryKey: ["reviews"],

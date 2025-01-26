@@ -121,7 +121,9 @@ export class ReviewService {
   }
 
   async create(userId: number, createReviewDto: CreateReviewDto) {
-    // Check if user already reviewed this title
+    // Sanitize HTML content here if needed
+    const sanitizedContent = createReviewDto.content;
+    
     const existingReview = await this.prisma.review.findFirst({
       where: {
         userId,
@@ -136,6 +138,7 @@ export class ReviewService {
     return this.prisma.review.create({
       data: {
         ...createReviewDto,
+        content: sanitizedContent,
         userId,
       },
       include: {

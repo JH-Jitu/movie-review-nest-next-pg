@@ -203,6 +203,9 @@ const AppBar: React.FC<{ loading: boolean }> = () => {
               <NavigationMenuItem>
                 <NavLink href="/people">People</NavLink>
               </NavigationMenuItem>
+              <NavigationMenuItem>
+                <NavLink href="/reviews">Reviews</NavLink>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
 
@@ -352,7 +355,6 @@ const MobileNavItem = ({
 const MobileMenu = () => {
   const user = useAuthStore((state) => state.fullUser);
 
-  console.log({ user });
   const [isOpen, setIsOpen] = React.useState(false);
 
   return (
@@ -422,6 +424,9 @@ const MobileMenu = () => {
 
               <MobileNavItem href="/people" icon={User}>
                 People
+              </MobileNavItem>
+              <MobileNavItem href="/reviews" icon={User}>
+                Reviews
               </MobileNavItem>
 
               {user ? (

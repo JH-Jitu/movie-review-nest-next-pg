@@ -75,6 +75,9 @@ model User {
   ReviewLike   ReviewLike[]
   ReviewShare  ReviewShare[]
   ReviewRepost ReviewRepost[]
+  likes        Like[]
+  reposts      Repost[]
+  shares       Share[]
 
   @@index([email], map: "user_email_idx")
 }
@@ -294,29 +297,24 @@ model Award {
 
 // User Generated Content
 model Review {
-  id           String  @id @default(uuid())
-  title        Title   @relation(fields: [titleId], references: [id])
-  titleId      String
-  user         User    @relation(fields: [userId], references: [id])
+  id           String         @id @default(uuid())
+  content      String
   userId       Int
-  content      String  @db.Text
-  rating       Int?    @db.SmallInt
-  helpfulVotes Int     @default(0)
-  spoilers     Boolean @default(false)
+  titleId      String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  user         User           @relation(fields: [userId], references: [id])
+  title        Title          @relation(fields: [titleId], references: [id])
+  comments     Comment[]
+  likes        Like[]
+  reposts      Repost[]
+  shares       Share[]
+  ReviewLike   ReviewLike[]
+  ReviewShare  ReviewShare[]
+  ReviewRepost ReviewRepost[]
 
-  // New social fields
-  likes      ReviewLike[]
-  shares     ReviewShare[]
-  reposts    ReviewRepost[]
-  images     String[] // Array of image URLs
-  visibility Visibility     @default(PUBLIC)
-
-  comments  Comment[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@index([titleId])
-  @@index([userId])
+  @@index([userId], map: "review_user_id_idx")
+  @@index([titleId], map: "review_title_id_idx")
 }
 
 model ReviewLike {
@@ -438,4 +436,35 @@ model WatchHistory {
 
   @@index([userId], map: "watch_history_user_id_idx")
   @@index([titleId], map: "watch_history_title_id_idx")
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  userId    Int
+  reviewId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  review    Review   @relation(fields: [reviewId], references: [id])
+
+  @@unique([userId, reviewId])
+}
+
+model Repost {
+  id        String   @id @default(uuid())
+  userId    Int
+  reviewId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  review    Review   @relation(fields: [reviewId], references: [id])
+
+  @@unique([userId, reviewId])
+}
+
+model Share {
+  id        String   @id @default(uuid())
+  userId    Int
+  reviewId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  review    Review   @relation(fields: [reviewId], references: [id])
 }

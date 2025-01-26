@@ -59,7 +59,7 @@ const MenuBar = ({ editor }) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={editor.isActive("bold") ? "bg-muted" : ""}
+        className={editor.isActive("bold") ? "bg-yellow-600" : ""}
       >
         <Bold className="h-4 w-4" />
       </Button>
@@ -68,7 +68,7 @@ const MenuBar = ({ editor }) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={editor.isActive("italic") ? "bg-muted" : ""}
+        className={editor.isActive("italic") ? "bg-yellow-600" : ""}
       >
         <Italic className="h-4 w-4" />
       </Button>
@@ -77,7 +77,7 @@ const MenuBar = ({ editor }) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={editor.isActive("underline") ? "bg-muted" : ""}
+        className={editor.isActive("underline") ? "bg-yellow-600" : ""}
       >
         <UnderlineIcon className="h-4 w-4" />
       </Button>
@@ -86,7 +86,7 @@ const MenuBar = ({ editor }) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleCode().run()}
-        className={editor.isActive("code") ? "bg-muted" : ""}
+        className={editor.isActive("code") ? "bg-yellow-600" : ""}
       >
         <Code className="h-4 w-4" />
       </Button>
@@ -95,7 +95,7 @@ const MenuBar = ({ editor }) => {
         variant="ghost"
         size="sm"
         onClick={setLink}
-        className={editor.isActive("link") ? "bg-muted" : ""}
+        className={editor.isActive("link") ? "bg-yellow-600" : ""}
       >
         <LinkIcon className="h-4 w-4" />
       </Button>
@@ -107,7 +107,7 @@ const MenuBar = ({ editor }) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={editor.isActive("bulletList") ? "bg-muted" : ""}
+        className={editor.isActive("bulletList") ? "bg-yellow-600" : ""}
       >
         <List className="h-4 w-4" />
       </Button>
@@ -116,7 +116,7 @@ const MenuBar = ({ editor }) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={editor.isActive("orderedList") ? "bg-muted" : ""}
+        className={editor.isActive("orderedList") ? "bg-yellow-600" : ""}
       >
         <ListOrdered className="h-4 w-4" />
       </Button>
@@ -125,7 +125,7 @@ const MenuBar = ({ editor }) => {
         variant="ghost"
         size="sm"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={editor.isActive("blockquote") ? "bg-muted" : ""}
+        className={editor.isActive("blockquote") ? "bg-yellow-600" : ""}
       >
         <Quote className="h-4 w-4" />
       </Button>
@@ -150,7 +150,7 @@ const MenuBar = ({ editor }) => {
 };
 
 export function CreateReviewForm({ onSubmit }) {
-  const { register, handleSubmit, reset } = useForm();
+  const { handleSubmit, reset } = useForm();
   const [selectedTitleId, setSelectedTitleId] = useState("");
 
   const editor = useEditor({
@@ -198,7 +198,7 @@ export function CreateReviewForm({ onSubmit }) {
   };
 
   return (
-    <Card>
+    <Card className="backdrop-blur-md dark:bg-white/5 bg-black/5 border-none">
       <CardContent className="pt-4">
         <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-4">
           <Select

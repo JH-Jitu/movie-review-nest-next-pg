@@ -4,6 +4,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaginationQueryDto, SortOrder } from '../common/dto/pagination.dto';
@@ -19,7 +20,7 @@ import { Prisma } from '@prisma/client';
 export class ReviewService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(query: PaginationQueryDto) {
+  async findAll(query: PaginationQueryDto, currentUserId?: number) {
     const {
       page = 1,
       limit = 10,
@@ -69,6 +70,19 @@ export class ReviewService {
           _count: {
             select: {
               comments: true,
+              likes: true,
+              reposts: true,
+              shares: true,
+            },
+          },
+          likes: {
+            select: {
+              userId: true,
+            },
+          },
+          reposts: {
+            select: {
+              userId: true,
             },
           },
         },
@@ -76,8 +90,19 @@ export class ReviewService {
       this.prisma.review.count({ where }),
     ]);
 
+    // Transform the data to include isLiked and isReposted flags
+    const transformedData = data.map((review) => ({
+      ...review,
+      isLiked: review.likes.some((like) => like.userId === currentUserId),
+      isReposted: review.reposts.some(
+        (repost) => repost.userId === currentUserId,
+      ),
+      likes: undefined, // Remove the likes array from response
+      reposts: undefined, // Remove the reposts array from response
+    }));
+
     return {
-      data,
+      data: transformedData,
       meta: {
         total,
         page,
@@ -123,7 +148,7 @@ export class ReviewService {
   async create(userId: number, createReviewDto: CreateReviewDto) {
     // Sanitize HTML content here if needed
     const sanitizedContent = createReviewDto.content;
-    
+
     const existingReview = await this.prisma.review.findFirst({
       where: {
         userId,
@@ -299,5 +324,103 @@ export class ReviewService {
     }
 
     return this.prisma.comment.delete({ where: { id: commentId } });
+  }
+
+  async toggleLike(userId: number, reviewId: string) {
+    // First check if review exists
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
+
+    if (!review) {
+      throw new NotFoundException(`Review with ID ${reviewId} not found`);
+    }
+
+    try {
+      const existingLike = await this.prisma.like.findFirst({
+        where: {
+          userId,
+          reviewId,
+        },
+      });
+
+      if (existingLike) {
+        await this.prisma.like.delete({
+          where: { id: existingLike.id },
+        });
+        return { isLiked: false };
+      }
+
+      await this.prisma.like.create({
+        data: {
+          userId,
+          reviewId,
+        },
+      });
+      return { isLiked: true };
+    } catch (error) {
+      console.error('Toggle like error:', error);
+      throw new InternalServerErrorException('Failed to process like action');
+    }
+  }
+
+  async toggleRepost(userId: number, reviewId: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
+
+    if (!review) {
+      throw new NotFoundException(`Review with ID ${reviewId} not found`);
+    }
+
+    try {
+      const existingRepost = await this.prisma.repost.findFirst({
+        where: {
+          userId,
+          reviewId,
+        },
+      });
+
+      if (existingRepost) {
+        await this.prisma.repost.delete({
+          where: { id: existingRepost.id },
+        });
+        return { isReposted: false };
+      }
+
+      await this.prisma.repost.create({
+        data: {
+          userId,
+          reviewId,
+        },
+      });
+      return { isReposted: true };
+    } catch (error) {
+      console.error('Toggle repost error:', error);
+      throw new InternalServerErrorException('Failed to process repost action');
+    }
+  }
+
+  async shareReview(userId: number, reviewId: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+    });
+
+    if (!review) {
+      throw new NotFoundException(`Review with ID ${reviewId} not found`);
+    }
+
+    try {
+      await this.prisma.share.create({
+        data: {
+          userId,
+          reviewId,
+        },
+      });
+      return { shared: true };
+    } catch (error) {
+      console.error('Share error:', error);
+      throw new InternalServerErrorException('Failed to process share action');
+    }
   }
 }

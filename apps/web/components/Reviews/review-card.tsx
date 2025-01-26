@@ -15,7 +15,7 @@ import { ReviewActions } from "./review-actions";
 
 export function ReviewCard({ review }) {
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden backdrop-blur-md dark:bg-white/5 bg-black/5 border-none">
       <CardHeader className="space-y-4">
         <div className="flex items-center space-x-4">
           <Avatar>

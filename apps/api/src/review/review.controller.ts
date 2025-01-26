@@ -42,8 +42,8 @@ export class ReviewController {
   @Get()
   @ApiOperation({ summary: 'Get all reviews with pagination and filters' })
   @ApiResponse({ status: 200, description: 'Returns paginated reviews' })
-  async findAll(@Query() query: PaginationQueryDto) {
-    return this.reviewService.findAll(query);
+  async findAll(@Query() query: PaginationQueryDto, @Request() req) {
+    return this.reviewService.findAll(query, req.user?.id);
   }
 
   @Get(':id')
@@ -117,5 +117,42 @@ export class ReviewController {
     @Param('commentId', ParseUUIDPipe) commentId: string,
   ) {
     return this.reviewService.removeComment(req.user.id, commentId);
+  }
+
+  @Post(':id/like')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Toggle like on a review' })
+  async toggleLike(@Param('id') reviewId: string, @Request() req) {
+    try {
+      const result = await this.reviewService.toggleLike(req.user.id, reviewId);
+      return result;
+    } catch (error) {
+      console.error('Like error:', error);
+      throw error;
+    }
+  }
+
+  @Post(':id/repost')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Toggle repost on a review' })
+  async toggleRepost(@Param('id') reviewId: string, @Request() req) {
+    try {
+      return await this.reviewService.toggleRepost(req.user.id, reviewId);
+    } catch (error) {
+      console.error('Repost error:', error);
+      throw error;
+    }
+  }
+
+  @Post(':id/share')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Share a review' })
+  async shareReview(@Param('id') reviewId: string, @Request() req) {
+    try {
+      return await this.reviewService.shareReview(req.user.id, reviewId);
+    } catch (error) {
+      console.error('Share error:', error);
+      throw error;
+    }
   }
 }

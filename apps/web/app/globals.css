@@ -86,3 +86,61 @@ body {
   background-color: var(--background);
   color: var(--foreground);
 }
+
+/* Add these styles for the Tiptap editor */
+.prose-editor .ProseMirror {
+  min-height: 200px;
+  padding: 1rem;
+  outline: none !important;
+  cursor: text;
+}
+
+.prose-editor .ProseMirror:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.prose-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Additional styles for content */
+.prose-editor .ProseMirror {
+  > * + * {
+    margin-top: 0.75em;
+  }
+
+  ul,
+  ol {
+    padding: 0 1rem;
+  }
+  ul {
+    list-style-type: disc;
+  }
+
+  ol {
+    list-style-type: decimal;
+  }
+
+  blockquote {
+    border-left: 2px solid #e2e8f0;
+    padding-left: 1rem;
+    font-style: italic;
+  }
+
+  code {
+    background-color: #f1f5f9;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+}

@@ -69,7 +69,10 @@ export function ReviewCard({ review }) {
       </CardHeader>
 
       <CardContent>
-        <p className="whitespace-pre-wrap">{review?.content}</p>
+        <div
+          className="whitespace-pre-wrap"
+          dangerouslySetInnerHTML={{ __html: review?.content }}
+        />
         {review?.images?.length > 0 && (
           <div className="mt-4 grid grid-cols-2 gap-2">
             {review?.images.map((image, index) => (

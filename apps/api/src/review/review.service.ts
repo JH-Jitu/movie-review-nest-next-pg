@@ -14,7 +14,7 @@ import {
   UpdateCommentDto,
   UpdateReviewDto,
 } from './review.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, Visibility } from '@prisma/client';
 
 @Injectable()
 export class ReviewService {
@@ -24,90 +24,119 @@ export class ReviewService {
     const {
       page = 1,
       limit = 10,
-      search,
       sortBy = 'createdAt',
       sortOrder = SortOrder.DESC,
     } = query;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.ReviewWhereInput = search
-      ? {
-          OR: [
-            { content: { contains: search, mode: 'insensitive' } },
-            {
-              title: {
-                primaryTitle: { contains: search, mode: 'insensitive' },
-              },
-            },
-            { user: { name: { contains: search, mode: 'insensitive' } } },
-          ],
-        }
-      : {};
-
-    const [data, total] = await Promise.all([
+    const [reviews, reposts] = await Promise.all([
       this.prisma.review.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          [sortBy]: sortOrder.toLowerCase() as Prisma.SortOrder,
+        where: {
+          OR: [
+            { visibility: Visibility.PUBLIC },
+            currentUserId && {
+              OR: [
+                {
+                  visibility: Visibility.FRIENDS,
+                  user: {
+                    followers: {
+                      some: { id: currentUserId },
+                    },
+                  },
+                },
+                {
+                  visibility: Visibility.PRIVATE,
+                  userId: currentUserId,
+                },
+              ],
+            },
+          ].filter(Boolean),
         },
         include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true,
-            },
-          },
-          title: {
-            select: {
-              id: true,
-              primaryTitle: true,
-              posterUrl: true,
-            },
-          },
+          user: true,
+          title: true,
           _count: {
             select: {
-              comments: true,
               likes: true,
+              comments: true,
               reposts: true,
               shares: true,
             },
           },
-          likes: {
-            select: {
-              userId: true,
+          likes: true,
+          reposts: true,
+        },
+        skip,
+        take: limit,
+        orderBy: { [sortBy]: sortOrder === SortOrder.DESC ? 'desc' : 'asc' },
+      }),
+      this.prisma.repost.findMany({
+        where: {
+          OR: [
+            { visibility: Visibility.PUBLIC },
+            currentUserId && {
+              OR: [
+                {
+                  visibility: Visibility.FRIENDS,
+                  user: {
+                    followers: {
+                      some: { id: currentUserId },
+                    },
+                  },
+                },
+                {
+                  visibility: Visibility.PRIVATE,
+                  userId: currentUserId,
+                },
+              ],
             },
-          },
-          reposts: {
-            select: {
-              userId: true,
+          ].filter(Boolean),
+        },
+        include: {
+          user: true,
+          review: {
+            include: {
+              user: true,
+              title: true,
+              _count: {
+                select: {
+                  likes: true,
+                  comments: true,
+                  reposts: true,
+                  shares: true,
+                },
+              },
             },
           },
         },
+        skip,
+        take: limit,
+        orderBy: { createdAt: sortOrder === SortOrder.DESC ? 'desc' : 'asc' },
       }),
-      this.prisma.review.count({ where }),
     ]);
 
-    // Transform the data to include isLiked and isReposted flags
-    const transformedData = data.map((review) => ({
-      ...review,
-      isLiked: review.likes.some((like) => like.userId === currentUserId),
-      isReposted: review.reposts.some(
-        (repost) => repost.userId === currentUserId,
-      ),
-      likes: undefined, // Remove the likes array from response
-      reposts: undefined, // Remove the reposts array from response
-    }));
+    const combined = [
+      ...reviews,
+      ...reposts.map((repost: any) => ({
+        ...repost.review,
+        repostedBy: repost.user,
+        repostComment: repost.comment,
+        repostDate: repost.createdAt,
+        repostVisibility: repost.visibility,
+      })),
+    ].sort((a, b) =>
+      sortOrder === SortOrder.DESC
+        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
 
     return {
-      data: transformedData,
+      data: combined.slice(0, limit),
       meta: {
-        total,
+        total: await this.prisma.review.count(),
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(combined.length / limit),
       },
     };
   }

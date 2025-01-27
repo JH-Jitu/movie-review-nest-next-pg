@@ -91,12 +91,12 @@ export default function ReviewsFeed() {
           page?.data?.map((review, index) => {
             if (index === page.data.length - 1) {
               return (
-                <div key={review.id} ref={ref}>
+                <div key={index} ref={ref}>
                   <ReviewCard review={review} />
                 </div>
               );
             }
-            return <ReviewCard key={review.id} review={review} />;
+            return <ReviewCard key={index} review={review} />;
           })
         )}
       </div>

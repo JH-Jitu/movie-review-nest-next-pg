@@ -44,6 +44,12 @@ enum WatchStatus {
   STOPPED_WATCHING
 }
 
+enum Visibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
 // User and Authentication
 model User {
   id                 Int      @id @default(autoincrement())
@@ -298,7 +304,8 @@ model Award {
 // User Generated Content
 model Review {
   id           String         @id @default(uuid())
-  content      String
+  content      String         @db.Text
+  visibility   Visibility     @default(PUBLIC)
   userId       Int
   titleId      String
   createdAt    DateTime       @default(now())
@@ -313,8 +320,8 @@ model Review {
   ReviewShare  ReviewShare[]
   ReviewRepost ReviewRepost[]
 
-  @@index([userId], map: "review_user_id_idx")
-  @@index([titleId], map: "review_title_id_idx")
+  @@index([userId])
+  @@index([titleId])
 }
 
 model ReviewLike {
@@ -346,12 +353,6 @@ model ReviewRepost {
   userId    Int
   comment   String?  @db.Text
   createdAt DateTime @default(now())
-}
-
-enum Visibility {
-  PUBLIC
-  FRIENDS
-  PRIVATE
 }
 
 model Rating {
@@ -450,13 +451,14 @@ model Like {
 }
 
 model Repost {
-  id        String   @id @default(uuid())
-  userId    Int
-  reviewId  String
-  comment   String?  @db.Text
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
-  review    Review   @relation(fields: [reviewId], references: [id])
+  id         String     @id @default(uuid())
+  userId     Int
+  reviewId   String
+  comment    String?    @db.Text
+  visibility Visibility @default(PUBLIC)
+  createdAt  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id])
+  review     Review     @relation(fields: [reviewId], references: [id])
 
   @@unique([userId, reviewId])
 }

@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, MessageCircle, Share2, Repeat2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Repeat2, Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,6 +69,17 @@ export function ReviewCard({ review }) {
       </CardHeader>
 
       <CardContent>
+        {review.repostedBy && (
+          <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
+            <Repeat2 className="w-4 h-4" />
+            <span>{review.repostedBy.name} reposted</span>
+            {review.repostComment && (
+              <div className="mt-2 p-3 bg-muted rounded-lg">
+                {review.repostComment}
+              </div>
+            )}
+          </div>
+        )}
         <div
           className="whitespace-pre-wrap"
           dangerouslySetInnerHTML={{ __html: review?.content }}

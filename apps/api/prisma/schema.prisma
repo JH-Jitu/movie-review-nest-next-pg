@@ -453,6 +453,7 @@ model Repost {
   id        String   @id @default(uuid())
   userId    Int
   reviewId  String
+  comment   String?  @db.Text
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   review    Review   @relation(fields: [reviewId], references: [id])

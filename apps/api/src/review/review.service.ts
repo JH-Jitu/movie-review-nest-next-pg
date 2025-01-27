@@ -364,7 +364,7 @@ export class ReviewService {
     }
   }
 
-  async toggleRepost(userId: number, reviewId: string) {
+  async toggleRepost(userId: number, reviewId: string, comment?: string) {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });
@@ -392,6 +392,7 @@ export class ReviewService {
         data: {
           userId,
           reviewId,
+          comment,
         },
       });
       return { isReposted: true };

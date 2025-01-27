@@ -135,9 +135,17 @@ export class ReviewController {
   @Post(':id/repost')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Toggle repost on a review' })
-  async toggleRepost(@Param('id') reviewId: string, @Request() req) {
+  async toggleRepost(
+    @Param('id') reviewId: string,
+    @Request() req,
+    @Body() data: { comment?: string },
+  ) {
     try {
-      return await this.reviewService.toggleRepost(req.user.id, reviewId);
+      return await this.reviewService.toggleRepost(
+        req.user.id,
+        reviewId,
+        data.comment,
+      );
     } catch (error) {
       console.error('Repost error:', error);
       throw error;

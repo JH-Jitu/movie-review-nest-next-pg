@@ -2,7 +2,17 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { Heart, MessageCircle, Share2, Repeat2, Star } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  Repeat2,
+  Star,
+  Eye,
+  EyeOff,
+  Users,
+  MoreHorizontal,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,26 +22,86 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { ReviewActions } from "./review-actions";
+import { useAuthStore } from "@/stores/auth.store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-export function ReviewCard({ review }) {
+export function ReviewCard({ review, onDelete }) {
+  const user = useAuthStore((state) => state.fullUser);
+
+  const renderVisibilityIcon = () => {
+    switch (review.visibility) {
+      case "PUBLIC":
+        return (
+          <div title="Public">
+            <Eye className="w-4 h-4 text-green-500" />
+          </div>
+        );
+      case "FRIENDS":
+        return (
+          <div title="Friends Only">
+            <Users className="w-4 h-4 text-blue-500" />
+          </div>
+        );
+      case "PRIVATE":
+        return (
+          <div title="Private">
+            <EyeOff className="w-4 h-4 text-red-500" />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const handleDelete = () => {
+    if (confirm("Are you sure you want to delete this review?")) {
+      onDelete(review.id);
+    }
+  };
+
   return (
     <Card className="overflow-hidden backdrop-blur-md dark:bg-white/5 bg-black/5 border-none">
       <CardHeader className="space-y-4">
-        <div className="flex items-center space-x-4">
-          <Avatar>
-            <AvatarImage src={review?.user?.avatar} />
-            <AvatarFallback>{review?.user?.name[0]}</AvatarFallback>
-          </Avatar>
-          <div>
-            <Link href={`/profile/${review?.user.id}`}>
-              <span className="font-semibold hover:underline">
-                {review?.user?.name}
-              </span>
-            </Link>
-            <p className="text-sm text-muted-foreground">
-              {formatDistanceToNow(new Date(review?.createdAt))} ago
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Avatar>
+              <AvatarImage src={review?.user?.avatar} />
+              <AvatarFallback>{review?.user?.name[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <Link href={`/profile/${review?.user.id}`}>
+                <span className="font-semibold hover:underline">
+                  {review?.user?.name}
+                </span>
+              </Link>
+              <div className="flex items-center space-x-1">
+                <p className="text-sm text-muted-foreground">
+                  {formatDistanceToNow(new Date(review?.createdAt))} ago
+                </p>
+                {renderVisibilityIcon()}
+              </div>
+            </div>
           </div>
+          {user?.id === review.userId && (
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <MoreHorizontal className="w-4 h-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         <Link href={`/movie/${review?.title?.id}`}>

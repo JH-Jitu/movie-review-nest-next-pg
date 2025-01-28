@@ -149,9 +149,15 @@ const MenuBar = ({ editor }) => {
   );
 };
 
-export function CreateReviewForm({ onSubmit }) {
+interface CreateReviewFormProps {
+  onSubmit: (data: { content: string; visibility: string }) => void;
+}
+
+export function CreateReviewForm({ onSubmit }: CreateReviewFormProps) {
   const { handleSubmit, reset } = useForm();
   const [selectedTitleId, setSelectedTitleId] = useState("");
+  const [content, setContent] = useState("");
+  const [visibility, setVisibility] = useState("PUBLIC");
 
   const editor = useEditor({
     extensions: [
@@ -190,6 +196,7 @@ export function CreateReviewForm({ onSubmit }) {
       ...data,
       titleId: selectedTitleId,
       content: editor.getHTML(),
+      visibility,
     });
 
     reset();
@@ -222,13 +229,25 @@ export function CreateReviewForm({ onSubmit }) {
             <EditorContent editor={editor} className="prose-editor" />
           </div>
 
-          <Button
-            type="submit"
-            disabled={!selectedTitleId || !editor?.getText().trim()}
-            className="w-full"
-          >
-            Post Review
-          </Button>
+          <div className="flex justify-between items-center">
+            <Select value={visibility} onValueChange={setVisibility}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PUBLIC">Public</SelectItem>
+                <SelectItem value="FRIENDS">Friends Only</SelectItem>
+                <SelectItem value="PRIVATE">Private</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              type="submit"
+              disabled={!selectedTitleId || !editor?.getText().trim()}
+              className="w-full"
+            >
+              Post Review
+            </Button>
+          </div>
         </form>
       </CardContent>
     </Card>

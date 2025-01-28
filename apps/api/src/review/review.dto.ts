@@ -20,6 +20,13 @@ export class CreateReviewDto {
   @IsBoolean()
   @IsOptional()
   spoilers?: boolean;
+
+  @ApiProperty({
+    enum: ['PUBLIC', 'FRIENDS', 'PRIVATE'],
+    required: false,
+  })
+  @IsOptional()
+  visibility?: 'PUBLIC' | 'FRIENDS' | 'PRIVATE';
 }
 
 export class UpdateReviewDto extends CreateReviewDto {}

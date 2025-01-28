@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useState } from "react";
 import {
   useInfiniteQuery,
   useMutation,
@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/auth.store";
 import { axiosInstance } from "@/config/axios";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function ReviewsFeedSkeleton() {
   return (
@@ -34,14 +35,15 @@ function ReviewsFeedSkeleton() {
 }
 
 export default function ReviewsFeed() {
+  const [selectedTab, setSelectedTab] = useState("all");
   const user = useAuthStore((state) => state.fullUser);
   const queryClient = useQueryClient();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
-      queryKey: ["reviews"],
+      queryKey: ["reviews", selectedTab],
       queryFn: async ({ pageParam = 1 }) => {
         const { data } = await axiosInstance.get(
-          `/reviews?page=${pageParam}&limit=10`
+          `/reviews?page=${pageParam}&limit=10&userId=${selectedTab === "my" ? user.id : ""}`
         );
         return data;
       },
@@ -76,10 +78,23 @@ export default function ReviewsFeed() {
     },
   });
 
+  const handleDelete = async (reviewId) => {
+    await axiosInstance.delete(`/reviews/${reviewId}`);
+    queryClient.invalidateQueries({ queryKey: ["reviews"] });
+    toast.success("Review deleted successfully!");
+  };
+
   if (isLoading) return <ReviewsFeedSkeleton />;
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
+      <Tabs defaultValue="all" className="mb-8" onValueChange={setSelectedTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="all">All Posts</TabsTrigger>
+          <TabsTrigger value="my">My Posts</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {user && (
         <div className="mb-8">
           <CreateReviewForm onSubmit={createReviewMutation.mutate} />
@@ -92,11 +107,13 @@ export default function ReviewsFeed() {
             if (index === page.data.length - 1) {
               return (
                 <div key={index} ref={ref}>
-                  <ReviewCard review={review} />
+                  <ReviewCard review={review} onDelete={handleDelete} />
                 </div>
               );
             }
-            return <ReviewCard key={index} review={review} />;
+            return (
+              <ReviewCard key={index} review={review} onDelete={handleDelete} />
+            );
           })
         )}
       </div>

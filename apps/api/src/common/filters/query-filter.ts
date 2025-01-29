@@ -3,7 +3,7 @@ export class QueryFilters {
   static createTitleFilters(query: any) {
     const filters: any = {};
 
-    console.log('Incoming query parameters:', query);
+    // console.log('Incoming query parameters:', query);
 
     if (query.type) {
       filters.titleType = query.type;

@@ -42,8 +42,8 @@ export class ReviewController {
   @Get()
   @ApiOperation({ summary: 'Get all reviews with pagination and filters' })
   @ApiResponse({ status: 200, description: 'Returns paginated reviews' })
-  async findAll(@Query() query: PaginationQueryDto, @Request() req) {
-    return this.reviewService.findAll(query, req.user?.id);
+  async findAll(@Query() query: PaginationQueryDto) {
+    return this.reviewService.findAll(query, null);
   }
 
   @Get(':id')

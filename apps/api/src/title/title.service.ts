@@ -300,7 +300,7 @@ export class TitleService {
       sortOrder = SortOrder.DESC,
     } = query;
 
-    console.log('Query parameters in findAll:', query); // Debugging line
+    // console.log('Query parameters in findAll:', query); // Debugging line
 
     if (search) {
       return this.searchTitles(query as FullSearchDto);
@@ -334,7 +334,7 @@ export class TitleService {
       this.prisma.title.count({ where: filters }),
     ]);
 
-    console.log('Data returned from database:', data); // Debugging line
+    // console.log('Data returned from database:', data); // Debugging line
 
     return {
       data,

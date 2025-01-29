@@ -15,6 +15,7 @@ import {
   ParseIntPipe,
   Query,
   BadRequestException,
+  Post,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -159,6 +160,57 @@ export class UserController {
     @Query() query: PaginationQueryDto,
   ) {
     return this.userService.getUserWatchlist(id, query);
+  }
+
+  @Get(':id/friend-status')
+  @ApiOperation({ summary: 'Get friendship status with another user' })
+  getFriendStatus(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.userService.getFriendStatus(req.user.id, id);
+  }
+
+  @Get(':id/friends')
+  @ApiOperation({ summary: 'Get user friends' })
+  getFriends(
+    @Param('id', ParseIntPipe) id: number,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.userService.getFriends(id, query);
+  }
+
+  @Get('me/friend-requests')
+  @ApiOperation({ summary: 'Get current user friend requests' })
+  getFriendRequests(@Request() req, @Query() query: PaginationQueryDto) {
+    return this.userService.getFriendRequests(req.user.id, query);
+  }
+
+  @Post(':id/friend-request')
+  @ApiOperation({ summary: 'Send friend request' })
+  sendFriendRequest(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.userService.sendFriendRequest(req.user.id, id);
+  }
+
+  @Put('friend-requests/:requestId/accept')
+  @ApiOperation({ summary: 'Accept friend request' })
+  acceptFriendRequest(@Request() req, @Param('requestId') requestId: string) {
+    return this.userService.acceptFriendRequest(req.user.id, requestId);
+  }
+
+  @Put('friend-requests/:requestId/reject')
+  @ApiOperation({ summary: 'Reject friend request' })
+  rejectFriendRequest(@Request() req, @Param('requestId') requestId: string) {
+    return this.userService.rejectFriendRequest(req.user.id, requestId);
+  }
+
+  @Delete('friend-requests/:requestId')
+  @ApiOperation({ summary: 'Cancel friend request' })
+  cancelFriendRequest(@Request() req, @Param('requestId') requestId: string) {
+    return this.userService.cancelFriendRequest(req.user.id, requestId);
+  }
+
+  @Delete('friends/:id')
+  @ApiOperation({ summary: 'Remove friend' })
+  removeFriend(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.userService.removeFriend(req.user.id, id);
   }
 
   // Admin only endpoints

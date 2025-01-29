@@ -85,6 +85,12 @@ model User {
   reposts      Repost[]
   shares       Share[]
 
+  // Friend System
+  sentFriendRequests     FriendRequest[] @relation("SentFriendRequests")
+  receivedFriendRequests FriendRequest[] @relation("ReceivedFriendRequests")
+  friends                User[]          @relation("UserFriends")
+  friendsOf              User[]          @relation("UserFriends")
+
   @@index([email], map: "user_email_idx")
 }
 
@@ -470,4 +476,17 @@ model Share {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   review    Review   @relation(fields: [reviewId], references: [id])
+}
+
+model FriendRequest {
+  id         String   @id @default(uuid())
+  sender     User     @relation("SentFriendRequests", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User     @relation("ReceivedFriendRequests", fields: [receiverId], references: [id])
+  receiverId Int
+  createdAt  DateTime @default(now())
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
 }

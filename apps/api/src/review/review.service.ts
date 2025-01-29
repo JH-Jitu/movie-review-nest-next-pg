@@ -20,40 +20,65 @@ import { Prisma, Visibility } from '@prisma/client';
 export class ReviewService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(query: PaginationQueryDto, currentUserId?: number) {
+  async findAll(query: PaginationQueryDto, userId?: number) {
     const {
       page = 1,
       limit = 10,
       sortBy = 'createdAt',
       sortOrder = SortOrder.DESC,
+      currentUserId,
     } = query;
     const skip = (page - 1) * limit;
 
-    const [reviews, reposts] = await Promise.all([
-      this.prisma.review.findMany({
-        where: {
+    const targetUserId = currentUserId ? Number(currentUserId) : userId;
+
+    const where = targetUserId
+      ? {
+          userId: targetUserId,
+          OR: [
+            { visibility: Visibility.PUBLIC },
+            { userId: targetUserId },
+            {
+              visibility: Visibility.FRIENDS,
+              user: {
+                followers: {
+                  some: { id: Number(targetUserId) },
+                },
+              },
+            },
+          ],
+        }
+      : {
           OR: [
             { visibility: Visibility.PUBLIC },
             currentUserId && {
-              OR: [
-                {
-                  visibility: Visibility.FRIENDS,
-                  user: {
-                    followers: {
-                      some: { id: currentUserId },
-                    },
-                  },
+              visibility: Visibility.FRIENDS,
+              user: {
+                followers: {
+                  some: { id: Number(currentUserId) },
                 },
-                {
-                  visibility: Visibility.PRIVATE,
-                  userId: currentUserId,
-                },
-              ],
+              },
             },
           ].filter(Boolean),
-        },
+        };
+
+    const [reviews, reposts] = await Promise.all([
+      this.prisma.review.findMany({
+        where,
         include: {
-          user: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+              bio: true,
+              location: true,
+              website: true,
+              role: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
           title: true,
           _count: {
             select: {
@@ -72,21 +97,22 @@ export class ReviewService {
       }),
       this.prisma.repost.findMany({
         where: {
+          ...(targetUserId ? { userId: targetUserId } : {}),
           OR: [
             { visibility: Visibility.PUBLIC },
-            currentUserId && {
+            targetUserId && {
               OR: [
                 {
                   visibility: Visibility.FRIENDS,
                   user: {
                     followers: {
-                      some: { id: currentUserId },
+                      some: { id: targetUserId },
                     },
                   },
                 },
                 {
                   visibility: Visibility.PRIVATE,
-                  userId: currentUserId,
+                  userId: targetUserId,
                 },
               ],
             },
@@ -130,13 +156,17 @@ export class ReviewService {
         : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
 
+    const total = await this.prisma.review.count({
+      where,
+    });
+
     return {
       data: combined.slice(0, limit),
       meta: {
-        total: await this.prisma.review.count(),
+        total,
         page,
         limit,
-        totalPages: Math.ceil(combined.length / limit),
+        totalPages: Math.ceil(total / limit),
       },
     };
   }
@@ -229,14 +259,30 @@ export class ReviewService {
     });
   }
 
-  async remove(userId: number, id: string) {
-    const review = await this.findOne(id);
+  async remove(userId: number, reviewId: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id: reviewId },
+      include: { user: true },
+    });
+
+    if (!review) {
+      throw new NotFoundException(`Review with ID ${reviewId} not found`);
+    }
 
     if (review.user.id !== userId) {
       throw new ForbiddenException('You can only delete your own reviews');
     }
 
-    return this.prisma.review.delete({ where: { id } });
+    // Delete all related records first
+    await this.prisma.$transaction([
+      this.prisma.comment.deleteMany({ where: { reviewId } }),
+      this.prisma.like.deleteMany({ where: { reviewId } }),
+      this.prisma.repost.deleteMany({ where: { reviewId } }),
+      this.prisma.share.deleteMany({ where: { reviewId } }),
+      this.prisma.review.delete({ where: { id: reviewId } }),
+    ]);
+
+    return { deleted: true };
   }
 
   // Comments

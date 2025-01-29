@@ -11,10 +11,14 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
 import { hash, verify } from 'argon2';
+import { ReviewService } from '../review/review.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly reviewService: ReviewService,
+  ) {}
 
   // Core User Methods
   async create(createUserDto: CreateUserDto) {
@@ -276,43 +280,8 @@ export class UserService {
   }
 
   async getUserReviews(userId: number, query: PaginationQueryDto) {
-    const { page = 1, limit = 10 } = query;
-    const skip = (page - 1) * limit;
-
-    const [data, total] = await Promise.all([
-      this.prisma.review.findMany({
-        where: { userId },
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          title: {
-            select: {
-              id: true,
-              primaryTitle: true,
-              posterUrl: true,
-              titleType: true,
-            },
-          },
-          _count: {
-            select: {
-              comments: true,
-            },
-          },
-        },
-      }),
-      this.prisma.review.count({ where: { userId } }),
-    ]);
-
-    return {
-      data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+    // Reuse the review service
+    return this.reviewService.findAll(query, userId);
   }
 
   async getUserRatings(userId: number, query: PaginationQueryDto) {
@@ -472,5 +441,309 @@ export class UserService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  // Friend System Methods
+  async sendFriendRequest(senderId: number, receiverId: number) {
+    if (senderId === receiverId) {
+      throw new BadRequestException(
+        "You can't send a friend request to yourself",
+      );
+    }
+
+    const receiver = await this.findOne(receiverId);
+    if (!receiver) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if they are already friends
+    const existingFriendship = await this.prisma.user.findFirst({
+      where: {
+        id: senderId,
+        friends: {
+          some: {
+            id: receiverId,
+          },
+        },
+      },
+    });
+
+    if (existingFriendship) {
+      throw new BadRequestException('You are already friends with this user');
+    }
+
+    // Check if there's already a pending request
+    const existingRequest = await this.prisma.friendRequest.findFirst({
+      where: {
+        OR: [
+          { senderId, receiverId },
+          { senderId: receiverId, receiverId: senderId },
+        ],
+      },
+    });
+
+    if (existingRequest) {
+      throw new BadRequestException(
+        'A friend request already exists between you and this user',
+      );
+    }
+
+    return this.prisma.friendRequest.create({
+      data: {
+        senderId,
+        receiverId,
+      },
+    });
+  }
+
+  async acceptFriendRequest(userId: number, requestId: string) {
+    const request = await this.prisma.friendRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Friend request not found');
+    }
+
+    if (request.receiverId !== userId) {
+      throw new BadRequestException('This friend request was not sent to you');
+    }
+
+    // Create friendship connection and delete the request
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: request.receiverId },
+        data: {
+          friends: {
+            connect: { id: request.senderId },
+          },
+        },
+      }),
+      this.prisma.user.update({
+        where: { id: request.senderId },
+        data: {
+          friends: {
+            connect: { id: request.receiverId },
+          },
+        },
+      }),
+      this.prisma.friendRequest.delete({
+        where: { id: requestId },
+      }),
+    ]);
+
+    return { message: 'Friend request accepted' };
+  }
+
+  async rejectFriendRequest(userId: number, requestId: string) {
+    const request = await this.prisma.friendRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Friend request not found');
+    }
+
+    if (request.receiverId !== userId) {
+      throw new BadRequestException('This friend request was not sent to you');
+    }
+
+    await this.prisma.friendRequest.delete({
+      where: { id: requestId },
+    });
+
+    return { message: 'Friend request rejected' };
+  }
+
+  async cancelFriendRequest(userId: number, requestId: string) {
+    const request = await this.prisma.friendRequest.findUnique({
+      where: { id: requestId },
+    });
+
+    if (!request) {
+      throw new NotFoundException('Friend request not found');
+    }
+
+    if (request.senderId !== userId) {
+      throw new BadRequestException('You did not send this friend request');
+    }
+
+    await this.prisma.friendRequest.delete({
+      where: { id: requestId },
+    });
+
+    return { message: 'Friend request cancelled' };
+  }
+
+  async removeFriend(userId: number, friendId: number) {
+    const existingFriendship = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+        friends: {
+          some: {
+            id: friendId,
+          },
+        },
+      },
+    });
+
+    if (!existingFriendship) {
+      throw new BadRequestException('You are not friends with this user');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          friends: {
+            disconnect: { id: friendId },
+          },
+        },
+      }),
+      this.prisma.user.update({
+        where: { id: friendId },
+        data: {
+          friends: {
+            disconnect: { id: userId },
+          },
+        },
+      }),
+    ]);
+
+    return { message: 'Friend removed successfully' };
+  }
+
+  async getFriendRequests(userId: number, query: PaginationQueryDto) {
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.friendRequest.findMany({
+        where: {
+          OR: [{ senderId: userId }, { receiverId: userId }],
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          receiver: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.friendRequest.count({
+        where: {
+          OR: [{ senderId: userId }, { receiverId: userId }],
+        },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getFriends(userId: number, query: PaginationQueryDto) {
+    const { page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        friends: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            bio: true,
+            _count: {
+              select: {
+                friends: true,
+              },
+            },
+          },
+          skip,
+          take: limit,
+        },
+        _count: {
+          select: {
+            friends: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      data: user.friends,
+      meta: {
+        total: user._count.friends,
+        page,
+        limit,
+        totalPages: Math.ceil(user._count.friends / limit),
+      },
+    };
+  }
+
+  async getFriendStatus(userId: number, otherUserId: number) {
+    if (userId === otherUserId) {
+      return { status: 'SELF' };
+    }
+
+    // Check if they are friends
+    const areFriends = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+        friends: {
+          some: {
+            id: otherUserId,
+          },
+        },
+      },
+    });
+
+    if (areFriends) {
+      return { status: 'FRIENDS' };
+    }
+
+    // Check for pending friend requests
+    const pendingRequest = await this.prisma.friendRequest.findFirst({
+      where: {
+        OR: [
+          { senderId: userId, receiverId: otherUserId },
+          { senderId: otherUserId, receiverId: userId },
+        ],
+      },
+    });
+
+    if (pendingRequest) {
+      if (pendingRequest.senderId === userId) {
+        return { status: 'REQUEST_SENT', requestId: pendingRequest.id };
+      } else {
+        return { status: 'REQUEST_RECEIVED', requestId: pendingRequest.id };
+      }
+    }
+
+    return { status: 'NOT_FRIENDS' };
   }
 }

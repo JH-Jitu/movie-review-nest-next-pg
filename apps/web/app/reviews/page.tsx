@@ -42,9 +42,17 @@ export default function ReviewsFeed() {
     useInfiniteQuery({
       queryKey: ["reviews", selectedTab],
       queryFn: async ({ pageParam = 1 }) => {
-        const { data } = await axiosInstance.get(
-          `/reviews?page=${pageParam}&limit=10&userId=${selectedTab === "my" ? user.id : ""}`
-        );
+        const params = new URLSearchParams({
+          page: pageParam.toString(),
+          limit: "10",
+          ...(selectedTab === "my"
+            ? user?.id
+              ? { currentUserId: user.id.toString() }
+              : {}
+            : { currentUserId: (0).toString() }),
+        });
+
+        const { data } = await axiosInstance.get(`/reviews?${params}`);
         return data;
       },
       initialPageParam: 1,
@@ -54,6 +62,7 @@ export default function ReviewsFeed() {
         }
         return undefined;
       },
+      enabled: selectedTab === "all" || (selectedTab === "my" && !!user),
     });
 
   const { ref, entry } = useIntersection({

@@ -89,7 +89,7 @@ const NavLink = ({
   );
 };
 
-const AppBar: React.FC<{ loading: boolean }> = () => {
+export function AppBar() {
   const [mounted, setMounted] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const user = useAuthStore((state) => state.fullUser);
@@ -98,6 +98,7 @@ const AppBar: React.FC<{ loading: boolean }> = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
   // During SSR and initial hydration, render a placeholder
   if (!mounted) {
     return (
@@ -113,8 +114,9 @@ const AppBar: React.FC<{ loading: boolean }> = () => {
           </div>
         </div>
       </nav>
-    ); // Adjust height as needed
+    );
   }
+
   return (
     <motion.header
       initial={{ opacity: 0 }}
@@ -318,9 +320,7 @@ const AppBar: React.FC<{ loading: boolean }> = () => {
       </div>
     </motion.header>
   );
-};
-
-export default AppBar;
+}
 
 const MobileNavItem = ({
   href,

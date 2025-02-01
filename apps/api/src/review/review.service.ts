@@ -52,12 +52,17 @@ export class ReviewService {
           OR: [
             { visibility: Visibility.PUBLIC },
             currentUserId && {
-              visibility: Visibility.FRIENDS,
-              user: {
-                followers: {
-                  some: { id: Number(currentUserId) },
+              OR: [
+                { userId: Number(currentUserId) },
+                {
+                  visibility: Visibility.FRIENDS,
+                  user: {
+                    followers: {
+                      some: { id: Number(currentUserId) },
+                    },
+                  },
                 },
-              },
+              ],
             },
           ].filter(Boolean),
         };

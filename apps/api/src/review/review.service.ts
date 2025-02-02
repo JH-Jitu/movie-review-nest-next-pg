@@ -32,7 +32,8 @@ export class ReviewService {
 
     const targetUserId = currentUserId ? Number(currentUserId) : userId;
 
-    const where = targetUserId
+    // Base where clause for reviews
+    const reviewWhere = targetUserId
       ? {
           userId: targetUserId,
           OR: [
@@ -52,24 +53,44 @@ export class ReviewService {
           OR: [
             { visibility: Visibility.PUBLIC },
             currentUserId && {
-              OR: [
-                { userId: Number(currentUserId) },
-                {
-                  visibility: Visibility.FRIENDS,
-                  user: {
-                    followers: {
-                      some: { id: Number(currentUserId) },
-                    },
-                  },
+              userId: Number(currentUserId),
+            },
+            currentUserId && {
+              visibility: Visibility.FRIENDS,
+              user: {
+                followers: {
+                  some: { id: Number(currentUserId) },
                 },
-              ],
+              },
+            },
+          ].filter(Boolean),
+        };
+
+    // Base where clause for reposts
+    const repostWhere = targetUserId
+      ? {
+          userId: targetUserId, // Only get reposts by the target user
+        }
+      : {
+          OR: [
+            { visibility: Visibility.PUBLIC },
+            currentUserId && {
+              userId: Number(currentUserId),
+            },
+            currentUserId && {
+              visibility: Visibility.FRIENDS,
+              user: {
+                followers: {
+                  some: { id: Number(currentUserId) },
+                },
+              },
             },
           ].filter(Boolean),
         };
 
     const [reviews, reposts] = await Promise.all([
       this.prisma.review.findMany({
-        where,
+        where: reviewWhere,
         include: {
           user: {
             select: {
@@ -101,28 +122,7 @@ export class ReviewService {
         orderBy: { [sortBy]: sortOrder === SortOrder.DESC ? 'desc' : 'asc' },
       }),
       this.prisma.repost.findMany({
-        where: {
-          ...(targetUserId ? { userId: targetUserId } : {}),
-          OR: [
-            { visibility: Visibility.PUBLIC },
-            targetUserId && {
-              OR: [
-                {
-                  visibility: Visibility.FRIENDS,
-                  user: {
-                    followers: {
-                      some: { id: targetUserId },
-                    },
-                  },
-                },
-                {
-                  visibility: Visibility.PRIVATE,
-                  userId: targetUserId,
-                },
-              ],
-            },
-          ].filter(Boolean),
-        },
+        where: repostWhere,
         include: {
           user: true,
           review: {
@@ -161,17 +161,18 @@ export class ReviewService {
         : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
 
-    const total = await this.prisma.review.count({
-      where,
-    });
+    const [reviewCount, repostCount] = await Promise.all([
+      this.prisma.review.count({ where: reviewWhere }),
+      this.prisma.repost.count({ where: repostWhere }),
+    ]);
 
     return {
       data: combined.slice(0, limit),
       meta: {
-        total,
+        total: reviewCount + repostCount,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil((reviewCount + repostCount) / limit),
       },
     };
   }

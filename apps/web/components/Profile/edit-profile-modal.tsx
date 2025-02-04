@@ -27,6 +27,8 @@ import {
   useUpdateProfile,
 } from "@/hooks/api/use-user";
 import { User } from "@/types";
+import Image from "next/image";
+import { DialogOverlay } from "@radix-ui/react-dialog";
 
 interface EditProfileModalProps {
   user: User;
@@ -69,7 +71,7 @@ export function EditProfileModal({ user }: EditProfileModalProps) {
           Edit Profile
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] ">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
         </DialogHeader>
@@ -77,13 +79,15 @@ export function EditProfileModal({ user }: EditProfileModalProps) {
           <div className="space-y-4">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <img
+                <Image
                   src={
                     getAvatarUrl(user.avatar) ||
                     user?.avatar ||
                     "/placeholder-avatar.png"
                   }
-                  alt={user?.name}
+                  alt={user?.name || "Profile picture"}
+                  width={64}
+                  height={64}
                   className="h-16 w-16 rounded-full object-cover"
                 />
                 <label

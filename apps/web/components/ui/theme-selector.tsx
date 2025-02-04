@@ -1,5 +1,7 @@
+// ThemeSelector.tsx
 import React from "react";
 import { useUIStore } from "@/stores/ui.store";
+import { useTheme } from "next-themes";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -7,14 +9,14 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Sun, Moon } from "lucide-react"; // Assuming you have these icons
+import { Sun, Moon } from "lucide-react";
 
 const ThemeSelector = () => {
-  const { theme, setTheme } = useUIStore();
+  const { theme } = useUIStore();
+  const { setTheme: setNextTheme } = useTheme();
 
   const handleThemeChange = (newTheme: "light" | "dark" | "oceanic") => {
-    setTheme(newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme); // Update the HTML attribute for styling
+    setNextTheme(newTheme);
   };
 
   return (

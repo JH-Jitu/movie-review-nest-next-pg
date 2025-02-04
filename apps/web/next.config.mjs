@@ -14,6 +14,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "encrypted-tbn1.gstatic.com",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
     ],
   },
 };

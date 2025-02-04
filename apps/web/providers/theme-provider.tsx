@@ -1,5 +1,7 @@
 "use client";
+
 import { useUIStore } from "@/stores/ui.store";
+import { ThemeProvider as NextThemeProvider } from "next-themes";
 import { useEffect } from "react";
 
 export default function ThemeProvider({
@@ -14,8 +16,8 @@ export default function ThemeProvider({
   }, [theme]);
 
   return (
-    <html className={theme === "light" ? "" : "dark"}>
-      <body>{children}</body>
-    </html>
+    <NextThemeProvider attribute="class" defaultTheme={theme} enableSystem>
+      {children}
+    </NextThemeProvider>
   );
 }

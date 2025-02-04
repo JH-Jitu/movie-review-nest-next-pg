@@ -32,61 +32,130 @@ export class ReviewService {
 
     const targetUserId = currentUserId ? Number(currentUserId) : userId;
 
-    // Base where clause for reviews
-    const reviewWhere = targetUserId
-      ? {
-          userId: targetUserId,
-          OR: [
-            { visibility: Visibility.PUBLIC },
-            { userId: targetUserId },
-            {
-              visibility: Visibility.FRIENDS,
-              user: {
-                followers: {
-                  some: { id: Number(targetUserId) },
+    if (targetUserId) {
+      // If we have a targetUserId, we only want:
+      // 1. Reviews created by this user
+      // 2. Reviews reposted by this user
+      const [reviews, reposts] = await Promise.all([
+        this.prisma.review.findMany({
+          where: {
+            userId: targetUserId,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                bio: true,
+                location: true,
+                website: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
+            title: true,
+            _count: {
+              select: {
+                likes: true,
+                comments: true,
+                reposts: true,
+                shares: true,
+              },
+            },
+            likes: true,
+            reposts: true,
+          },
+        }),
+        this.prisma.repost.findMany({
+          where: {
+            userId: targetUserId,
+          },
+          include: {
+            user: true,
+            review: {
+              include: {
+                user: true,
+                title: true,
+                _count: {
+                  select: {
+                    likes: true,
+                    comments: true,
+                    reposts: true,
+                    shares: true,
+                  },
                 },
               },
             },
-          ],
-        }
-      : {
-          OR: [
-            { visibility: Visibility.PUBLIC },
-            currentUserId && {
-              userId: Number(currentUserId),
+          },
+        }),
+      ]);
+
+      const combined = [
+        ...reviews,
+        ...reposts.map((repost) => ({
+          ...repost.review,
+          repostedBy: repost.user,
+          repostComment: repost.comment,
+          repostDate: repost.createdAt,
+          repostVisibility: repost.visibility,
+        })),
+      ].sort((a, b) =>
+        sortOrder === SortOrder.DESC
+          ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+
+      const total = reviews.length + reposts.length;
+
+      return {
+        data: combined.slice(skip, skip + limit),
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    }
+
+    // If no targetUserId, keep the existing public feed logic
+    // ... existing code for public feed ...
+    const reviewWhere = {
+      OR: [
+        { visibility: Visibility.PUBLIC },
+        currentUserId && {
+          userId: Number(currentUserId),
+        },
+        currentUserId && {
+          visibility: Visibility.FRIENDS,
+          user: {
+            followers: {
+              some: { id: Number(currentUserId) },
             },
-            currentUserId && {
-              visibility: Visibility.FRIENDS,
-              user: {
-                followers: {
-                  some: { id: Number(currentUserId) },
-                },
-              },
-            },
-          ].filter(Boolean),
-        };
+          },
+        },
+      ].filter(Boolean),
+    };
 
     // Base where clause for reposts
-    const repostWhere = targetUserId
-      ? {
-          userId: targetUserId, // Only get reposts by the target user
-        }
-      : {
-          OR: [
-            { visibility: Visibility.PUBLIC },
-            currentUserId && {
-              userId: Number(currentUserId),
+    const repostWhere = {
+      OR: [
+        { visibility: Visibility.PUBLIC },
+        currentUserId && {
+          userId: Number(currentUserId),
+        },
+        currentUserId && {
+          visibility: Visibility.FRIENDS,
+          user: {
+            followers: {
+              some: { id: Number(currentUserId) },
             },
-            currentUserId && {
-              visibility: Visibility.FRIENDS,
-              user: {
-                followers: {
-                  some: { id: Number(currentUserId) },
-                },
-              },
-            },
-          ].filter(Boolean),
-        };
+          },
+        },
+      ].filter(Boolean),
+    };
 
     const [reviews, reposts] = await Promise.all([
       this.prisma.review.findMany({

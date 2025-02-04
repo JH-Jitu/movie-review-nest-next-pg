@@ -60,7 +60,11 @@ export function useLogin() {
       if (redirect) {
         router.replace(redirect); // Redirect to the intended page
       } else {
-        router.push("/"); // Default to the root page
+        try {
+          router.push("/");
+        } catch {
+          window.location.href = "/";
+        }
       }
     },
     onError: (error) => {

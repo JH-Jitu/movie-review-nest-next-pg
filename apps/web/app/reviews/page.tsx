@@ -49,7 +49,7 @@ export default function ReviewsFeed() {
             ? user?.id
               ? { currentUserId: user.id.toString() }
               : {}
-            : { currentUserId: (0).toString() }),
+            : ""),
         });
 
         const { data } = await axiosInstance.get(`/reviews?${params}`);

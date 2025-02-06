@@ -223,6 +223,7 @@ export class ReviewService {
         repostComment: repost.comment,
         repostDate: repost.createdAt,
         repostVisibility: repost.visibility,
+        isRepost: true,
       })),
     ].sort((a, b) =>
       sortOrder === SortOrder.DESC

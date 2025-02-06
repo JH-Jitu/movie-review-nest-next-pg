@@ -24,7 +24,7 @@ export default function ThemeProvider({
       value={{
         light: "light",
         dark: "dark",
-        oceanic: "oceanic",
+        oceanic: "dark",
       }}
       // enableSystem
     >

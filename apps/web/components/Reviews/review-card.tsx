@@ -70,7 +70,7 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
   if (!review?.id || !review?.user) return null;
 
   return (
-    <Card className="overflow-hidden backdrop-blur-md dark:bg-white/5 bg-black/5 border-none">
+    <Card className="overflow-hidden backdrop-blur-md dark:bg-white/5 dark:drop-shadow-[0_4px_8px_rgba(255, 255, 255, 0.014)] bg-[#00000005] drop-shadow-lg border-none">
       <CardHeader className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">

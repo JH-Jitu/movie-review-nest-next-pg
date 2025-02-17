@@ -4,7 +4,15 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { MoreHorizontal, Star, Eye, EyeOff, Users, Trash2 } from "lucide-react";
+import {
+  MoreHorizontal,
+  Star,
+  Eye,
+  EyeOff,
+  Users,
+  Trash2,
+  Repeat2,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
@@ -39,6 +47,7 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
   const user = useAuthStore((state) => state.fullUser);
   const isOwnReview = user?.id === parseInt(review.userId);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const isRepost = review.type === "repost";
 
   const renderVisibilityIcon = () => {
     if (!review?.visibility) return null;
@@ -144,6 +153,16 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
           )}
         </div>
 
+        {isRepost && (
+          <div className="flex items-center gap-2 mb-3 text-muted-foreground">
+            <Repeat2 className="w-4 h-4" />
+            <span>{review.repostedBy.name} reposted</span>
+            <span className="text-sm">
+              {formatDistanceToNow(new Date(review.repostDate))} ago
+            </span>
+          </div>
+        )}
+
         {review.title && (
           <Link href={`/movie/${review.title.id}`}>
             <div className="flex items-center space-x-3">
@@ -183,6 +202,7 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
       {review.content && (
         <CardContent>
           <div
+            className={isRepost ? "ml-4" : ""}
             className="whitespace-pre-wrap"
             dangerouslySetInnerHTML={{ __html: review.content }}
           />

@@ -93,18 +93,26 @@ export class ReviewService {
       ]);
 
       const combined = [
-        ...reviews,
+        ...reviews.map((review) => ({
+          ...review,
+          type: 'original',
+          activityDate: review.createdAt,
+        })),
         ...reposts.map((repost) => ({
           ...repost.review,
+          type: 'repost',
           repostedBy: repost.user,
           repostComment: repost.comment,
           repostDate: repost.createdAt,
           repostVisibility: repost.visibility,
+          activityDate: repost.createdAt, // Using repost date for sorting
         })),
       ].sort((a, b) =>
         sortOrder === SortOrder.DESC
-          ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          ? new Date(b.activityDate).getTime() -
+            new Date(a.activityDate).getTime()
+          : new Date(a.activityDate).getTime() -
+            new Date(b.activityDate).getTime(),
       );
 
       const total = reviews.length + reposts.length;
@@ -186,8 +194,6 @@ export class ReviewService {
           likes: true,
           reposts: true,
         },
-        skip,
-        take: limit,
         orderBy: { [sortBy]: sortOrder === SortOrder.DESC ? 'desc' : 'asc' },
       }),
       this.prisma.repost.findMany({
@@ -209,27 +215,34 @@ export class ReviewService {
             },
           },
         },
-        skip,
-        take: limit,
         orderBy: { createdAt: sortOrder === SortOrder.DESC ? 'desc' : 'asc' },
       }),
     ]);
 
     const combined = [
-      ...reviews,
-      ...reposts.map((repost: any) => ({
+      ...reviews.map((review) => ({
+        ...review,
+        type: 'original',
+        activityDate: review.createdAt,
+      })),
+      ...reposts.map((repost) => ({
         ...repost.review,
+        type: 'repost',
         repostedBy: repost.user,
         repostComment: repost.comment,
         repostDate: repost.createdAt,
         repostVisibility: repost.visibility,
-        isRepost: true,
+        activityDate: repost.createdAt,
       })),
     ].sort((a, b) =>
       sortOrder === SortOrder.DESC
-        ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        : new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        ? new Date(b.activityDate).getTime() -
+          new Date(a.activityDate).getTime()
+        : new Date(a.activityDate).getTime() -
+          new Date(b.activityDate).getTime(),
     );
+
+    const paginatedData = combined.slice(skip, skip + limit);
 
     const [reviewCount, repostCount] = await Promise.all([
       this.prisma.review.count({ where: reviewWhere }),
@@ -237,9 +250,11 @@ export class ReviewService {
     ]);
 
     return {
-      data: combined.slice(0, limit),
+      data: paginatedData,
       meta: {
         total: reviewCount + repostCount,
+        reviewCount,
+        repostCount,
         page,
         limit,
         totalPages: Math.ceil((reviewCount + repostCount) / limit),

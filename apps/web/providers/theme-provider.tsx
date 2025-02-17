@@ -33,17 +33,16 @@ export default function ThemeProvider({
     </NextThemeProvider>
   );
 }
-
 // Separate component to handle theme synchronization
 function ThemeSync() {
-  const { theme: nextTheme } = useTheme();
+  const { theme } = useTheme();
   const { setTheme } = useUIStore();
 
   useEffect(() => {
-    if (nextTheme) {
-      setTheme(nextTheme as "light" | "dark" | "oceanic");
+    if (theme) {
+      setTheme(theme as "light" | "dark" | "oceanic");
     }
-  }, [nextTheme, setTheme]);
+  }, [theme, setTheme]);
 
   return null;
 }

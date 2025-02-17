@@ -38,7 +38,7 @@ export async function createSession(payload: Session) {
 }
 
 export async function getSession() {
-  const cookie = cookies().get("session")?.value;
+  const cookie = cookies()?.get("session")?.value;
   if (!cookie) {
     console.error("Session cookie is missing.");
     return null;
@@ -53,7 +53,8 @@ export async function getSession() {
     return payload as Session;
   } catch (err) {
     console.error("Failed to verify the session", err);
-    redirect("/auth/signin");
+    // redirect("/auth/signin");
+    return null;
   }
 }
 
